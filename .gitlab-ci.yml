@@ -1,0 +1,23 @@
+stages:
+  - lint
+  - test
+linter:
+  stage: lint
+  image: python:latest
+  before_script:
+    - pip install cpplint
+  script:
+    - make lint
+unit_tests:
+  stage: test
+  image: gcc:latest
+  before_script:
+    - apt install make python-pip -y
+    - pip install gcovr
+  script:
+    - make build_test
+    - make run_test
+  artifacts:
+    expire_in: 1 day
+    paths:
+      - test/build/pwire-server-test
