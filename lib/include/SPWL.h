@@ -1,17 +1,18 @@
-#ifndef LIB_INCLUDE_SPWLPACKAGE_H_
-#define LIB_INCLUDE_SPWLPACKAGE_H_
+#ifndef LIB_INCLUDE_SPWL_H_
+#define LIB_INCLUDE_SPWL_H_
 
 #include <optional>
 #include <string>
 #include <array>
 
 class SPWLPackage{
-private:
+ private:
   std::string data;
   uint16_t senderAddress;
   uint16_t length;
   char channel;
   bool last;
+
  public:
   static constexpr int HEADERSIZE = 29;
   static constexpr int CHECKSUMSIZE = 16;
@@ -25,7 +26,8 @@ private:
 
   SPWLPackage static encapsulateData(std::string data);
 
-  std::optional<SPWLPackage> static encapsulatePackage(std::array<unsigned, PACKETSIZE> rawData);
+  std::optional<SPWLPackage> static
+      encapsulatePackage(std::array<unsigned, PACKETSIZE> rawData);
 
   bool static checkPreamble(std::array<unsigned, PREAMBLESIZE> preamble);
 
@@ -40,4 +42,4 @@ private:
   int rawDataSize() const;
 };
 
-#endif  // LIB_INCLUDE_SPWLPACKAGE_H_
+#endif  // LIB_INCLUDE_SPWL_H_

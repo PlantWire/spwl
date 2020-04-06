@@ -5,8 +5,9 @@
 
 SPWLPackage::SPWLPackage(uint16_t senderAddress, char channel,
     std::string data, bool last = false) {
-  if(data.size() > MAXDATASIZE){
-    throw std::invalid_argument("Data can be maximum " + std::to_string(MAXDATASIZE) + " byte in length.");
+  if (data.size() > MAXDATASIZE) {
+    throw std::invalid_argument("Data can be maximum "
+    + std::to_string(MAXDATASIZE) + " byte in length.");
   }
   this->senderAddress = senderAddress;
   this->channel = channel;
@@ -73,11 +74,11 @@ std::optional<SPWLPackage> SPWLPackage::
     dataLenght += rawData.at(11);
 
     bool last = false;
-    if(rawData.at(12) == 255){
+    if (rawData.at(12) == 255) {
       last = true;
     }
 
-    if(dataLenght <= MAXDATASIZE) {
+    if (dataLenght <= MAXDATASIZE) {
       std::string checksum{rawData.begin() + 13,
                            rawData.begin() + 13 + CHECKSUMSIZE};
       std::string data{rawData.begin() + HEADERSIZE,
@@ -93,8 +94,8 @@ std::optional<SPWLPackage> SPWLPackage::
 }
 
 bool SPWLPackage::checkPreamble(std::array<unsigned, PREAMBLESIZE> preamble) {
-  for(size_t i = 0; i < PREAMBLESIZE; i++) {
-    if(preamble[i] != PREAMBLE[i]){
+  for (size_t i = 0; i < PREAMBLESIZE; i++) {
+    if (preamble[i] != PREAMBLE[i]) {
       return false;
     }
   }
