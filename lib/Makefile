@@ -1,5 +1,9 @@
 ARCHIVE = libSPWL
 
+COVFLAGS += -fprofile-arcs
+COVFLAGS += -ftest-coverage
+COVFLAGS += -fPIC
+
 all:	build_lib
 
 build_lib:
@@ -10,7 +14,7 @@ build_lib:
   else
 		mkdir -p build/
   endif
-	$(CXX) src/SPWL.cpp -c $(CFLAGS) -g $(CXXFLAGS) $(CPPFLAGS) -o build/$(ARCHIVE).o -Wall -Wextra -std=c++17
+	$(CXX) src/SPWL.cpp -c $(CFLAGS) -g $(CXXFLAGS) $(CPPFLAGS) $(COVFLAGS) -o build/$(ARCHIVE).o -Wall -Wextra -std=c++17
 	ar rcs build/$(ARCHIVE).a build/$(ARCHIVE).o
 
 build_lib_prod:
