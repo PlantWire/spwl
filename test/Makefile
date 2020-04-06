@@ -9,7 +9,7 @@ all:	build_test
 
 run_test:
 	cd build && ./$(EXECUTABLE)
-	gcovr -r . -e "cute/*"
+	cd ../ && gcovr -r . -e "cute/*"
 
 build_test:
   ifeq ($(OS),Windows_NT)

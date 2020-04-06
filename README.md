@@ -1,6 +1,6 @@
 # SPWL
-[![pipeline status](https://gitlab.dev.ifs.hsr.ch/epj/2020/pwire/pwire-server/badges/master/pipeline.svg)](https://gitlab.dev.ifs.hsr.ch/epj/2020/pwire/pwire-server/-/commits/master)
-[![coverage report](https://gitlab.dev.ifs.hsr.ch/epj/2020/pwire/pwire-server/badges/master/coverage.svg)](https://gitlab.dev.ifs.hsr.ch/epj/2020/pwire/pwire-server/-/commits/master)
+[![pipeline status](https://gitlab.dev.ifs.hsr.ch/epj/2020/pwire/spwl/badges/master/pipeline.svg)](https://gitlab.dev.ifs.hsr.ch/epj/2020/pwire/spwl/-/commits/master)
+[![coverage report](https://gitlab.dev.ifs.hsr.ch/epj/2020/pwire/spwl/badges/master/coverage.svg)](https://gitlab.dev.ifs.hsr.ch/epj/2020/pwire/spwl/-/commits/master)
 
 This is the repositiory of the SPWL-Protocol reference implementation.
 ## For Developers:
