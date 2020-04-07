@@ -14,12 +14,15 @@ class SPWLPackage{
   bool last;
 
  public:
-  static constexpr int HEADERSIZE = 29;
-  static constexpr int CHECKSUMSIZE = 16;
   static constexpr int PACKETSIZE = 512;
-  static constexpr int MAXDATASIZE = 483;
+  static constexpr int HEADERSIZE = 29;
   static constexpr int PREAMBLESIZE = 7;
+  static constexpr int CHECKSUMSIZE = 16;
+  static constexpr char TRAILERSIZE = 1;
+  static constexpr int MAXDATASIZE = PACKETSIZE -
+      PREAMBLESIZE - HEADERSIZE - TRAILERSIZE;
   static constexpr char PREAMBLE[] = "UUUUUUU";
+  static constexpr unsigned char TRAILER = 4;
 
   SPWLPackage(uint16_t senderAddress, char channel,
       std::string data, bool last);

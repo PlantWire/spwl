@@ -31,6 +31,7 @@ void checksumCheckerTest() {
 void packageTest() {
   std::string data = "Hello";
   SPWLPackage package = SPWLPackage::encapsulateData(data);
+  std::cout << package.rawData();
   std::optional<SPWLPackage> res =
       SPWLPackage::encapsulatePackage(package.rawData());
 

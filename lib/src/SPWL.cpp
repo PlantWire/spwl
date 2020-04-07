@@ -21,7 +21,7 @@ std::string SPWLPackage::getData() const {
 }
 
 int SPWLPackage::rawDataSize() const {
-  return this->data.size() + HEADERSIZE;
+  return HEADERSIZE + this->data.size() + TRAILERSIZE;
 }
 
 std::array<unsigned, SPWLPackage::PACKETSIZE> SPWLPackage::rawData() const {
@@ -51,6 +51,9 @@ std::array<unsigned, SPWLPackage::PACKETSIZE> SPWLPackage::rawData() const {
   outputIter = std::copy(checksum.cbegin(), checksum.cend(), outputIter);
 
   std::copy(this->data.cbegin(), this->data.cend(), outputIter);
+
+  output.at(HEADERSIZE + this->data.size()) = TRAILER;
+
   return output;
 }
 
