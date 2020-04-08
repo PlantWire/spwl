@@ -12,6 +12,8 @@ class SPWLPackage{
   uint16_t length;
   char channel;
   bool last;
+  SPWLPackage(uint16_t senderAddress, char channel,
+              std::string data, bool last);
 
  public:
   static constexpr int PACKETSIZE = 512;
@@ -24,10 +26,7 @@ class SPWLPackage{
   static constexpr char PREAMBLE[] = "UUUUUUU";
   static constexpr unsigned char TRAILER = 4;
 
-  SPWLPackage(uint16_t senderAddress, char channel,
-      std::string data, bool last);
-
-  SPWLPackage static encapsulateData(std::string data);
+  std::pair<SPWLPackage, bool> static encapsulateData(std::string data);
 
   std::pair<SPWLPackage, bool> static
       encapsulatePackage(std::array<unsigned char, PACKETSIZE> rawData);

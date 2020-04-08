@@ -30,46 +30,58 @@ void checksumCheckerTest() {
 
 void packageTest() {
   std::string data = "Hello";
-  SPWLPackage package = SPWLPackage::encapsulateData(data);
-  std::pair<SPWLPackage, bool> res =
-      SPWLPackage::encapsulatePackage(package.rawData());
+  std::pair<SPWLPackage, bool> res = SPWLPackage::encapsulateData(data);
+  if(res.second){
+    SPWLPackage package{res.first};
+    std::pair<SPWLPackage, bool> res =
+        SPWLPackage::encapsulatePackage(package.rawData());
 
-  if (res.second) {
-    ASSERT_EQUAL(data, res.first.getData());
-  } else {
-    ASSERT_EQUAL("Package not valid", "");
+    if (res.second) {
+      ASSERT_EQUAL(data, res.first.getData());
+    } else {
+      ASSERT_EQUAL("Package not valid", "");
+    }
   }
 }
 
 void packageMinTest() {
   std::string data = "o";
-  SPWLPackage package = SPWLPackage::encapsulateData(data);
-  std::pair<SPWLPackage, bool> res =
-      SPWLPackage::encapsulatePackage(package.rawData());
 
-  if (res.second) {
-    ASSERT_EQUAL(data, res.first.getData());
-  } else {
-    ASSERT_EQUAL("Package not valid", "");
+  std::pair<SPWLPackage, bool> res = SPWLPackage::encapsulateData(data);
+  if(res.second){
+    SPWLPackage package{res.first};
+    std::pair<SPWLPackage, bool> res =
+        SPWLPackage::encapsulatePackage(package.rawData());
+
+    if (res.second) {
+      ASSERT_EQUAL(data, res.first.getData());
+    } else {
+      ASSERT_EQUAL("Package not valid", "");
+    }
   }
 }
 
 void packageMaxTest() {
   std::string data(SPWLPackage::MAXDATASIZE, 'h');
-  SPWLPackage package = SPWLPackage::encapsulateData(data);
-  std::pair<SPWLPackage, bool> res =
-      SPWLPackage::encapsulatePackage(package.rawData());
 
-  if (res.second) {
-    ASSERT_EQUAL(data, res.first.getData());
-  } else {
-    ASSERT_EQUAL("Package not valid", "");
+  std::pair<SPWLPackage, bool> res = SPWLPackage::encapsulateData(data);
+  if(res.second){
+    SPWLPackage package{res.first};
+    std::pair<SPWLPackage, bool> res =
+        SPWLPackage::encapsulatePackage(package.rawData());
+
+    if (res.second) {
+      ASSERT_EQUAL(data, res.first.getData());
+    } else {
+      ASSERT_EQUAL("Package not valid", "");
+    }
   }
 }
 
 void packageOverflowTest() {
   std::string data(SPWLPackage::MAXDATASIZE+1, 'h');
-  ASSERT_THROWS(SPWLPackage::encapsulateData(data), std::invalid_argument);
+  std::pair<SPWLPackage, bool> res = SPWLPackage::encapsulateData(data);
+  ASSERT_EQUAL(res.second, false);
 }
 
 bool runAllTests(int argc, char const *argv[]) {

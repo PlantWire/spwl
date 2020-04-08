@@ -1,14 +1,10 @@
 #include "../include/SPWL.h"
 #include <algorithm>
 #include <stdexcept>
-
+#include <string>
 
 SPWLPackage::SPWLPackage(uint16_t senderAddress, char channel,
     std::string data, bool last = false) {
-  if (data.size() > MAXDATASIZE) {
-    throw std::invalid_argument("Data can be maximum "
-    + std::to_string(MAXDATASIZE) + " byte in length.");
-  }
   this->senderAddress = senderAddress;
   this->channel = channel;
   this->data = data;
@@ -58,9 +54,15 @@ std::array<unsigned char, SPWLPackage::PACKETSIZE> SPWLPackage::
   return output;
 }
 
-SPWLPackage SPWLPackage::encapsulateData(std::string data) {
+std::pair<SPWLPackage, bool> SPWLPackage::encapsulateData(std::string data) {
+  if(data.size() > MAXDATASIZE){
+    SPWLPackage package{0, 0, "", 0};
+    std::pair<SPWLPackage, bool> result{package, false};
+    return result;
+  }
   SPWLPackage package{8, 24, data, true};
-  return package;
+  std::pair<SPWLPackage, bool> result{package, true};
+  return result;
 }
 
 std::pair<SPWLPackage, bool> SPWLPackage::
@@ -90,13 +92,13 @@ std::pair<SPWLPackage, bool> SPWLPackage::
 
       if (checkChecksum(checksum, data)) {
         SPWLPackage package{senderAddress, channel, data, last};
-        std::pair result{package, true};
+        std::pair<SPWLPackage, bool> result{package, true};
         return result;
       }
     }
   }
   SPWLPackage package{0, 0, 0, 0};
-  std::pair result{package, false};
+  std::pair<SPWLPackage, bool> result{package, false};
   return result;
 }
 
