@@ -30,9 +30,9 @@ class SPWLPackage{
   SPWLPackage static encapsulateData(std::string data);
 
   std::optional<SPWLPackage> static
-      encapsulatePackage(std::array<unsigned, PACKETSIZE> rawData);
+      encapsulatePackage(std::array<unsigned char, PACKETSIZE> rawData);
 
-  bool static checkPreamble(std::array<unsigned, PREAMBLESIZE> preamble);
+  bool static checkPreamble(std::array<unsigned char, PREAMBLESIZE> preamble);
 
   bool static checkChecksum(std::string checksum, std::string data);
 
@@ -40,7 +40,7 @@ class SPWLPackage{
 
   std::string getData() const;
 
-  std::array<unsigned, PACKETSIZE> rawData() const;
+  std::array<unsigned char, PACKETSIZE> rawData() const;
 
   int rawDataSize() const;
 };

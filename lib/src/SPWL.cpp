@@ -24,8 +24,9 @@ int SPWLPackage::rawDataSize() const {
   return HEADERSIZE + this->data.size() + TRAILERSIZE;
 }
 
-std::array<unsigned, SPWLPackage::PACKETSIZE> SPWLPackage::rawData() const {
-  std::array<unsigned, PACKETSIZE> output{};
+std::array<unsigned char, SPWLPackage::PACKETSIZE> SPWLPackage::
+    rawData() const {
+  std::array<unsigned char, PACKETSIZE> output{};
 
   for (size_t i = 0; i < PREAMBLESIZE; i++) {
     output.at(i) = PREAMBLE[i];
@@ -63,8 +64,8 @@ SPWLPackage SPWLPackage::encapsulateData(std::string data) {
 }
 
 std::optional<SPWLPackage> SPWLPackage::
-  encapsulatePackage(std::array<unsigned, PACKETSIZE> rawData) {
-  std::array<unsigned, PREAMBLESIZE> preamble;
+  encapsulatePackage(std::array<unsigned char, PACKETSIZE> rawData) {
+  std::array<unsigned char, PREAMBLESIZE> preamble;
   std::copy(rawData.begin(), rawData.begin() + PREAMBLESIZE, preamble.begin());
 
   if (checkPreamble(preamble)) {
@@ -96,7 +97,8 @@ std::optional<SPWLPackage> SPWLPackage::
   return {};
 }
 
-bool SPWLPackage::checkPreamble(std::array<unsigned, PREAMBLESIZE> preamble) {
+bool SPWLPackage::
+    checkPreamble(std::array<unsigned char, PREAMBLESIZE> preamble) {
   for (size_t i = 0; i < PREAMBLESIZE; i++) {
     if (preamble[i] != PREAMBLE[i]) {
       return false;
