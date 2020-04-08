@@ -55,7 +55,7 @@ std::array<unsigned char, SPWLPackage::PACKETSIZE> SPWLPackage::
 }
 
 std::pair<SPWLPackage, bool> SPWLPackage::encapsulateData(std::string data) {
-  if(data.size() > MAXDATASIZE){
+  if (data.size() > MAXDATASIZE) {
     SPWLPackage package{0, 0, "", 0};
     std::pair<SPWLPackage, bool> result{package, false};
     return result;

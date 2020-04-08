@@ -31,7 +31,7 @@ void checksumCheckerTest() {
 void packageTest() {
   std::string data = "Hello";
   std::pair<SPWLPackage, bool> res = SPWLPackage::encapsulateData(data);
-  if(res.second){
+  if (res.second) {
     SPWLPackage package{res.first};
     std::pair<SPWLPackage, bool> res =
         SPWLPackage::encapsulatePackage(package.rawData());
@@ -48,7 +48,7 @@ void packageMinTest() {
   std::string data = "o";
 
   std::pair<SPWLPackage, bool> res = SPWLPackage::encapsulateData(data);
-  if(res.second){
+  if (res.second) {
     SPWLPackage package{res.first};
     std::pair<SPWLPackage, bool> res =
         SPWLPackage::encapsulatePackage(package.rawData());
@@ -65,7 +65,7 @@ void packageMaxTest() {
   std::string data(SPWLPackage::MAXDATASIZE, 'h');
 
   std::pair<SPWLPackage, bool> res = SPWLPackage::encapsulateData(data);
-  if(res.second){
+  if (res.second) {
     SPWLPackage package{res.first};
     std::pair<SPWLPackage, bool> res =
         SPWLPackage::encapsulatePackage(package.rawData());
