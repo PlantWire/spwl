@@ -63,7 +63,7 @@ SPWLPackage SPWLPackage::encapsulateData(std::string data) {
   return package;
 }
 
-std::optional<SPWLPackage> SPWLPackage::
+std::pair<SPWLPackage, bool> SPWLPackage::
   encapsulatePackage(std::array<unsigned char, PACKETSIZE> rawData) {
   std::array<unsigned char, PREAMBLESIZE> preamble;
   std::copy(rawData.begin(), rawData.begin() + PREAMBLESIZE, preamble.begin());
@@ -90,11 +90,14 @@ std::optional<SPWLPackage> SPWLPackage::
 
       if (checkChecksum(checksum, data)) {
         SPWLPackage package{senderAddress, channel, data, last};
-        return package;
+        std::pair result{package, true};
+        return result;
       }
     }
   }
-  return {};
+  SPWLPackage package{0, 0, 0, 0};
+  std::pair result{package, false};
+  return result;
 }
 
 bool SPWLPackage::

@@ -31,11 +31,11 @@ void checksumCheckerTest() {
 void packageTest() {
   std::string data = "Hello";
   SPWLPackage package = SPWLPackage::encapsulateData(data);
-  std::optional<SPWLPackage> res =
+  std::pair<SPWLPackage, bool> res =
       SPWLPackage::encapsulatePackage(package.rawData());
 
-  if (res.has_value()) {
-    ASSERT_EQUAL(data, res.value().getData());
+  if (res.second) {
+    ASSERT_EQUAL(data, res.first.getData());
   } else {
     ASSERT_EQUAL("Package not valid", "");
   }
@@ -44,11 +44,11 @@ void packageTest() {
 void packageMinTest() {
   std::string data = "o";
   SPWLPackage package = SPWLPackage::encapsulateData(data);
-  std::optional<SPWLPackage> res =
+  std::pair<SPWLPackage, bool> res =
       SPWLPackage::encapsulatePackage(package.rawData());
 
-  if (res.has_value()) {
-    ASSERT_EQUAL(data, res.value().getData());
+  if (res.second) {
+    ASSERT_EQUAL(data, res.first.getData());
   } else {
     ASSERT_EQUAL("Package not valid", "");
   }
@@ -57,11 +57,11 @@ void packageMinTest() {
 void packageMaxTest() {
   std::string data(SPWLPackage::MAXDATASIZE, 'h');
   SPWLPackage package = SPWLPackage::encapsulateData(data);
-  std::optional<SPWLPackage> res =
+  std::pair<SPWLPackage, bool> res =
       SPWLPackage::encapsulatePackage(package.rawData());
 
-  if (res.has_value()) {
-    ASSERT_EQUAL(data, res.value().getData());
+  if (res.second) {
+    ASSERT_EQUAL(data, res.first.getData());
   } else {
     ASSERT_EQUAL("Package not valid", "");
   }

@@ -1,7 +1,7 @@
 #ifndef LIB_INCLUDE_SPWL_H_
 #define LIB_INCLUDE_SPWL_H_
 
-#include <optional>
+#include <utility>
 #include <string>
 #include <array>
 
@@ -29,7 +29,7 @@ class SPWLPackage{
 
   SPWLPackage static encapsulateData(std::string data);
 
-  std::optional<SPWLPackage> static
+  std::pair<SPWLPackage, bool> static
       encapsulatePackage(std::array<unsigned char, PACKETSIZE> rawData);
 
   bool static checkPreamble(std::array<unsigned char, PREAMBLESIZE> preamble);
