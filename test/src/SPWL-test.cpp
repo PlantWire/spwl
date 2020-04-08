@@ -9,7 +9,7 @@
 #include "../include/SPWL-test.h"
 
 void preambleCheckerTest() {
-  std::array<unsigned, SPWLPackage::PREAMBLESIZE> input{};
+  std::array<unsigned char, SPWLPackage::PREAMBLESIZE> input{};
   std::string testPreamble = "UUUUUUU";
   for (size_t i = 0; i < testPreamble.size(); i++) {
     input[i] = testPreamble[i];
@@ -31,7 +31,6 @@ void checksumCheckerTest() {
 void packageTest() {
   std::string data = "Hello";
   SPWLPackage package = SPWLPackage::encapsulateData(data);
-  std::cout << package.rawData();
   std::optional<SPWLPackage> res =
       SPWLPackage::encapsulatePackage(package.rawData());
 
