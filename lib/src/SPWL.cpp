@@ -112,6 +112,12 @@ bool SPWLPackage::
   return true;
 }
 
+uint16_t SPWLPackage::getLengthFromHeader(std::array<unsigned char, HEADERSIZE> header){
+  uint16_t length = header.at(10) << 8;
+  length += header.at(11);
+  return length;
+}
+
 bool SPWLPackage::checkChecksum(std::string checksum, std::string data) {
   return (checksum == generateChecksum(data));
 }

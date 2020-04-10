@@ -69,7 +69,6 @@ void packageMaxTest() {
     SPWLPackage package{res.first};
     std::pair<SPWLPackage, bool> res =
         SPWLPackage::encapsulatePackage(package.rawData());
-
     if (res.second) {
       ASSERT_EQUAL(data, res.first.getData());
     } else {
@@ -84,6 +83,20 @@ void packageOverflowTest() {
   ASSERT_EQUAL(res.second, false);
 }
 
+void lengthExtractorTest() {
+  std::string data {"MyLittleCpp"};
+  std::pair<SPWLPackage, bool> result = SPWLPackage::encapsulateData(data);
+  if(result.second) {
+    std::array<unsigned char, SPWLPackage::PACKETSIZE> rawData{result.first.rawData()};
+    std::array<unsigned char, SPWLPackage::HEADERSIZE> header{};
+    std::copy(rawData.cbegin(), rawData.cbegin() + SPWLPackage::HEADERSIZE, header.begin());
+    uint16_t length = SPWLPackage::getLengthFromHeader(header);
+    ASSERT_EQUAL(11, length);
+  } else {
+    ASSERT_EQUAL("Package not valid", "");
+  }
+}
+
 bool runAllTests(int argc, char const *argv[]) {
   cute::suite s;
   // TODO(ckirchme) add your test here
@@ -94,6 +107,7 @@ bool runAllTests(int argc, char const *argv[]) {
   s.push_back(CUTE(packageMinTest));
   s.push_back(CUTE(packageMaxTest));
   s.push_back(CUTE(packageOverflowTest));
+  s.push_back(CUTE(lengthExtractorTest));
   cute::xml_file_opener xmlfile(argc, argv);
   cute::xml_listener<cute::ide_listener<> > lis(xmlfile.out);
   bool success = cute::makeRunner(lis, argc, argv)(s, "AllTests");
