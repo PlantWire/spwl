@@ -86,10 +86,12 @@ void packageOverflowTest() {
 void lengthExtractorTest() {
   std::string data {"MyLittleCpp"};
   std::pair<SPWLPackage, bool> result = SPWLPackage::encapsulateData(data);
-  if(result.second) {
-    std::array<unsigned char, SPWLPackage::PACKETSIZE> rawData{result.first.rawData()};
+  if (result.second) {
+    std::array<unsigned char, SPWLPackage::PACKETSIZE>
+        rawData{result.first.rawData()};
     std::array<unsigned char, SPWLPackage::HEADERSIZE> header{};
-    std::copy(rawData.cbegin(), rawData.cbegin() + SPWLPackage::HEADERSIZE, header.begin());
+    std::copy(rawData.cbegin(), rawData.cbegin() + SPWLPackage::HEADERSIZE,
+        header.begin());
     uint16_t length = SPWLPackage::getLengthFromHeader(header);
     ASSERT_EQUAL(11, length);
   } else {

@@ -33,7 +33,8 @@ class SPWLPackage{
 
   bool static checkPreamble(std::array<unsigned char, PREAMBLESIZE> preamble);
 
-  uint16_t static getLengthFromHeader(std::array<unsigned char, HEADERSIZE> header);
+  uint16_t static getLengthFromHeader(std::array<unsigned char, HEADERSIZE>
+      header);
 
   bool static checkChecksum(std::string checksum, std::string data);
 
