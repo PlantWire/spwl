@@ -17,7 +17,7 @@ class SPWLPackage{
 
  public:
   static constexpr int PACKETSIZE = 512;
-  static constexpr int HEADERSIZE = 29;
+  static constexpr int HEADERSIZE = 22;
   static constexpr int PREAMBLESIZE = 7;
   static constexpr int CHECKSUMSIZE = 16;
   static constexpr char TRAILERSIZE = 1;

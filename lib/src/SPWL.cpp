@@ -17,7 +17,7 @@ std::string SPWLPackage::getData() const {
 }
 
 int SPWLPackage::rawDataSize() const {
-  return HEADERSIZE + this->data.size() + TRAILERSIZE;
+  return PREAMBLESIZE + HEADERSIZE + this->data.size() + TRAILERSIZE;
 }
 
 std::array<unsigned char, SPWLPackage::PACKETSIZE> SPWLPackage::
@@ -49,7 +49,7 @@ std::array<unsigned char, SPWLPackage::PACKETSIZE> SPWLPackage::
 
   std::copy(this->data.cbegin(), this->data.cend(), outputIter);
 
-  output.at(HEADERSIZE + this->data.size()) = TRAILER;
+  output.at(PREAMBLESIZE + HEADERSIZE + this->data.size()) = TRAILER;
 
   return output;
 }
@@ -71,7 +71,7 @@ std::pair<SPWLPackage, bool> SPWLPackage::
   std::copy(rawData.begin(), rawData.begin() + PREAMBLESIZE, preamble.begin());
 
   if (checkPreamble(preamble)) {
-    uint16_t senderAddress = rawData.at(7) << 8;
+    uint16_t senderAddress = rawData.at(0) << 8;
     senderAddress += rawData.at(8);
 
     char channel = rawData.at(9);
@@ -87,8 +87,9 @@ std::pair<SPWLPackage, bool> SPWLPackage::
     if (dataLenght <= MAXDATASIZE) {
       std::string checksum{rawData.begin() + 13,
                            rawData.begin() + 13 + CHECKSUMSIZE};
-      std::string data{rawData.begin() + HEADERSIZE,
-                       rawData.begin() + HEADERSIZE + dataLenght};
+      std::string data{rawData.begin() + PREAMBLESIZE + HEADERSIZE,
+                       rawData.begin() + PREAMBLESIZE + HEADERSIZE
+                       + dataLenght};
 
       if (checkChecksum(checksum, data)) {
         SPWLPackage package{senderAddress, channel, data, last};
@@ -97,7 +98,7 @@ std::pair<SPWLPackage, bool> SPWLPackage::
       }
     }
   }
-  SPWLPackage package{0, 0, 0, 0};
+  SPWLPackage package{0, 0, "", 0};
   std::pair<SPWLPackage, bool> result{package, false};
   return result;
 }
@@ -114,8 +115,8 @@ bool SPWLPackage::
 
 uint16_t SPWLPackage::getLengthFromHeader(std::array<unsigned char, HEADERSIZE>
     header) {
-  uint16_t length = header.at(10) << 8;
-  length += header.at(11);
+  uint16_t length = header.at(3) << 8;
+  length += header.at(4);
   return length;
 }
 

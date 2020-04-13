@@ -18,13 +18,13 @@ void preambleCheckerTest() {
 }
 
 void checksumTest() {
-  std::string data {"Hello"};
+  std::string data{"Hello"};
   ASSERT_EQUAL("HelloWorld!!!!!!", SPWLPackage::generateChecksum(data));
 }
 
 void checksumCheckerTest() {
-  std::string data {"Hello"};
-  std::string checksum {SPWLPackage::generateChecksum(data)};
+  std::string data{"Hello"};
+  std::string checksum{SPWLPackage::generateChecksum(data)};
   ASSERT_EQUAL(SPWLPackage::checkChecksum(checksum, data), true);
 }
 
@@ -41,6 +41,27 @@ void packageTest() {
     } else {
       ASSERT_EQUAL("Package not valid", "");
     }
+  } else {
+    ASSERT_EQUAL("encapsulateData package not valid", "");
+  }
+}
+
+void corruptPackageTest() {
+  std::string data = "Hello";
+  std::pair<SPWLPackage, bool> res = SPWLPackage::encapsulateData(data);
+  if (res.second) {
+    auto raw = res.first.rawData();
+    raw[0] = 5;
+    std::pair<SPWLPackage, bool> res =
+        SPWLPackage::encapsulatePackage(raw);
+
+    if (!res.second) {
+      ASSERT_EQUAL("Package not valid", "Package not valid");
+    } else {
+      ASSERT_EQUAL("Package should not be valid", "valid");
+    }
+  } else {
+    ASSERT_EQUAL("encapsulateData package not valid", "");
   }
 }
 
@@ -58,6 +79,8 @@ void packageMinTest() {
     } else {
       ASSERT_EQUAL("Package not valid", "");
     }
+  } else {
+    ASSERT_EQUAL("encapsulateData package not valid", "");
   }
 }
 
@@ -74,28 +97,40 @@ void packageMaxTest() {
     } else {
       ASSERT_EQUAL("Package not valid", "");
     }
+  } else {
+    ASSERT_EQUAL("encapsulateData package not valid", "");
   }
 }
 
 void packageOverflowTest() {
-  std::string data(SPWLPackage::MAXDATASIZE+1, 'h');
+  std::string data(SPWLPackage::MAXDATASIZE + 1, 'h');
   std::pair<SPWLPackage, bool> res = SPWLPackage::encapsulateData(data);
   ASSERT_EQUAL(res.second, false);
 }
 
 void lengthExtractorTest() {
-  std::string data {"MyLittleCpp"};
+  std::string data{"MyLittleCpp"};
   std::pair<SPWLPackage, bool> result = SPWLPackage::encapsulateData(data);
   if (result.second) {
     std::array<unsigned char, SPWLPackage::PACKETSIZE>
         rawData{result.first.rawData()};
     std::array<unsigned char, SPWLPackage::HEADERSIZE> header{};
-    std::copy(rawData.cbegin(), rawData.cbegin() + SPWLPackage::HEADERSIZE,
-        header.begin());
+    std::copy(rawData.cbegin() + SPWLPackage::PREAMBLESIZE,
+        rawData.cbegin() + SPWLPackage::HEADERSIZE, header.begin());
     uint16_t length = SPWLPackage::getLengthFromHeader(header);
     ASSERT_EQUAL(11, length);
   } else {
-    ASSERT_EQUAL("Package not valid", "");
+    ASSERT_EQUAL("encapsulateData package not valid", "");
+  }
+}
+
+void rawDataSizeTest() {
+  std::string data{"MyLittleCpp"};
+  std::pair<SPWLPackage, bool> result = SPWLPackage::encapsulateData(data);
+  if (result.second) {
+    ASSERT_EQUAL(7 + 22 + 11 + 1, result.first.rawDataSize());
+  } else {
+    ASSERT_EQUAL("encapsulateData package not valid", "");
   }
 }
 
@@ -106,10 +141,12 @@ bool runAllTests(int argc, char const *argv[]) {
   s.push_back(CUTE(checksumTest));
   s.push_back(CUTE(checksumCheckerTest));
   s.push_back(CUTE(packageTest));
+  s.push_back(CUTE(corruptPackageTest));
   s.push_back(CUTE(packageMinTest));
   s.push_back(CUTE(packageMaxTest));
   s.push_back(CUTE(packageOverflowTest));
   s.push_back(CUTE(lengthExtractorTest));
+  s.push_back(CUTE(rawDataSizeTest));
   cute::xml_file_opener xmlfile(argc, argv);
   cute::xml_listener<cute::ide_listener<> > lis(xmlfile.out);
   bool success = cute::makeRunner(lis, argc, argv)(s, "AllTests");
