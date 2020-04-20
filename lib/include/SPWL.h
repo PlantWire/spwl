@@ -12,6 +12,7 @@ class SPWLPackage{
   uint16_t length;
   char channel;
   bool last;
+  std::array<unsigned char, CHECKSUMSIZE> checksum;
   SPWLPackage(uint16_t senderAddress, char channel,
               std::string data, bool last);
 
@@ -36,9 +37,9 @@ class SPWLPackage{
   uint16_t static getLengthFromHeader(std::array<unsigned char, HEADERSIZE>
       header);
 
-  bool static checkChecksum(std::string checksum, std::string data);
+  bool checkChecksum();
 
-  std::string static generateChecksum(std::string data);
+  std::array<unsigned char, CHECKSUMSIZE> generateChecksum();
 
   std::string getData() const;
 

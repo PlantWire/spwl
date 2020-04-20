@@ -2,6 +2,7 @@
 #include <algorithm>
 #include <stdexcept>
 #include <string>
+#include <openssl/md5.h>
 
 SPWLPackage::SPWLPackage(uint16_t senderAddress, char channel,
     std::string data, bool last = false) {
@@ -10,6 +11,7 @@ SPWLPackage::SPWLPackage(uint16_t senderAddress, char channel,
   this->data = data;
   this->last = last;
   this->length = data.size();
+  this->checksum = this->generateChecksum();
 }
 
 std::string SPWLPackage::getData() const {
@@ -44,8 +46,7 @@ std::array<unsigned char, SPWLPackage::PACKETSIZE> SPWLPackage::
 
   auto outputIter = output.begin();
   std::advance(outputIter, 13);
-  std::string checksum = generateChecksum(this->data);
-  outputIter = std::copy(checksum.cbegin(), checksum.cend(), outputIter);
+  outputIter = std::copy(this->checksum.cbegin(), this->checksum.cend(), outputIter);
 
   std::copy(this->data.cbegin(), this->data.cend(), outputIter);
 
@@ -85,7 +86,7 @@ std::pair<SPWLPackage, bool> SPWLPackage::
     }
 
     if (dataLenght <= MAXDATASIZE) {
-      std::string checksum{rawData.begin() + 13,
+      this->checksum{rawData.begin() + 13,
                            rawData.begin() + 13 + CHECKSUMSIZE};
       std::string data{rawData.begin() + PREAMBLESIZE + HEADERSIZE,
                        rawData.begin() + PREAMBLESIZE + HEADERSIZE
@@ -120,10 +121,16 @@ uint16_t SPWLPackage::getLengthFromHeader(std::array<unsigned char, HEADERSIZE>
   return length;
 }
 
-bool SPWLPackage::checkChecksum(std::string checksum, std::string data) {
-  return (checksum == generateChecksum(data));
+bool SPWLPackage::checkChecksum() {
+  return (this->checksum == generateChecksum(data));
 }
 
-std::string SPWLPackage::generateChecksum(std::string data) {
-  return "HelloWorld!!!!!!";
+std::array<unsigned char, CHECKSUMSIZE> SPWLPackage::generateChecksum() {
+  // ToDo(ckirchme): generate md5 from infos. Also try to remove lcrypto dependency from exe.
+  const unsigned char * input = (unsigned char *) data.c_str();
+  unsigned char * result = static_cast<unsigned char *>(malloc(MD5_DIGEST_LENGTH));
+  MD5(input, static_cast<unsigned long>(data.size()), result);
+  std::string strResult((char *) result, MD5_DIGEST_LENGTH);
+  free(result);
+  return strResult;
 }
