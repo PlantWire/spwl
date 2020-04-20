@@ -1,8 +1,9 @@
-#include "../include/SPWL.h"
 #include <algorithm>
 #include <stdexcept>
 #include <string>
-#include <openssl/md5.h>
+
+#include "../include/SPWL.h"
+#include "../include/sha256.h"
 
 SPWLPackage::SPWLPackage(uint16_t senderAddress, char channel,
     std::string data, bool last = false) {
@@ -11,7 +12,7 @@ SPWLPackage::SPWLPackage(uint16_t senderAddress, char channel,
   this->data = data;
   this->last = last;
   this->length = data.size();
-  this->checksum = this->generateChecksum();
+  this->checksum = generateChecksum(data);
 }
 
 std::string SPWLPackage::getData() const {
@@ -46,7 +47,8 @@ std::array<unsigned char, SPWLPackage::PACKETSIZE> SPWLPackage::
 
   auto outputIter = output.begin();
   std::advance(outputIter, 13);
-  outputIter = std::copy(this->checksum.cbegin(), this->checksum.cend(), outputIter);
+  outputIter = std::copy(this->checksum.cbegin(), this->checksum.cend(),
+      outputIter);
 
   std::copy(this->data.cbegin(), this->data.cend(), outputIter);
 
@@ -86,8 +88,10 @@ std::pair<SPWLPackage, bool> SPWLPackage::
     }
 
     if (dataLenght <= MAXDATASIZE) {
-      this->checksum{rawData.begin() + 13,
-                           rawData.begin() + 13 + CHECKSUMSIZE};
+      std::array<unsigned char, CHECKSUMSIZE> checksum;
+      std::copy(rawData.cbegin() + 13, rawData.cbegin() + 13 + CHECKSUMSIZE,
+                checksum.begin());
+
       std::string data{rawData.begin() + PREAMBLESIZE + HEADERSIZE,
                        rawData.begin() + PREAMBLESIZE + HEADERSIZE
                        + dataLenght};
@@ -121,16 +125,12 @@ uint16_t SPWLPackage::getLengthFromHeader(std::array<unsigned char, HEADERSIZE>
   return length;
 }
 
-bool SPWLPackage::checkChecksum() {
-  return (this->checksum == generateChecksum(data));
+bool SPWLPackage::checkChecksum(std::array<unsigned char, CHECKSUMSIZE>
+    checksum, std::string data) {
+  return (checksum == generateChecksum(data));
 }
 
-std::array<unsigned char, CHECKSUMSIZE> SPWLPackage::generateChecksum() {
-  // ToDo(ckirchme): generate md5 from infos. Also try to remove lcrypto dependency from exe.
-  const unsigned char * input = (unsigned char *) data.c_str();
-  unsigned char * result = static_cast<unsigned char *>(malloc(MD5_DIGEST_LENGTH));
-  MD5(input, static_cast<unsigned long>(data.size()), result);
-  std::string strResult((char *) result, MD5_DIGEST_LENGTH);
-  free(result);
-  return strResult;
+std::array<unsigned char, SPWLPackage::CHECKSUMSIZE>
+    SPWLPackage::generateChecksum(std::string data) {
+  return sha256(data);
 }

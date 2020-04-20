@@ -17,17 +17,6 @@ void preambleCheckerTest() {
   ASSERT_EQUAL(SPWLPackage::checkPreamble(input), true);
 }
 
-void checksumTest() {
-  std::string data{"Hello"};
-  ASSERT_EQUAL("HelloWorld!!!!!!", SPWLPackage::generateChecksum(data));
-}
-
-void checksumCheckerTest() {
-  std::string data{"Hello"};
-  std::string checksum{SPWLPackage::generateChecksum(data)};
-  ASSERT_EQUAL(SPWLPackage::checkChecksum(checksum, data), true);
-}
-
 void packageTest() {
   std::string data = "Hello";
   std::pair<SPWLPackage, bool> res = SPWLPackage::encapsulateData(data);
@@ -55,6 +44,24 @@ void corruptPackageTest() {
     std::pair<SPWLPackage, bool> res =
         SPWLPackage::encapsulatePackage(raw);
 
+    if (!res.second) {
+      ASSERT_EQUAL("Package not valid", "Package not valid");
+    } else {
+      ASSERT_EQUAL("Package should not be valid", "valid");
+    }
+  } else {
+    ASSERT_EQUAL("encapsulateData package not valid", "");
+  }
+}
+
+void corruptDataTest() {
+  std::string data = "Hello";
+  std::pair<SPWLPackage, bool> res = SPWLPackage::encapsulateData(data);
+  if (res.second) {
+    auto raw = res.first.rawData();
+    raw[SPWLPackage::PREAMBLESIZE + SPWLPackage::HEADERSIZE + 1] = 5;
+    std::pair<SPWLPackage, bool> res =
+        SPWLPackage::encapsulatePackage(raw);
     if (!res.second) {
       ASSERT_EQUAL("Package not valid", "Package not valid");
     } else {
@@ -128,7 +135,7 @@ void rawDataSizeTest() {
   std::string data{"MyLittleCpp"};
   std::pair<SPWLPackage, bool> result = SPWLPackage::encapsulateData(data);
   if (result.second) {
-    ASSERT_EQUAL(7 + 22 + 11 + 1, result.first.rawDataSize());
+    ASSERT_EQUAL(7 + 38 + 11 + 1, result.first.rawDataSize());
   } else {
     ASSERT_EQUAL("encapsulateData package not valid", "");
   }
@@ -138,10 +145,9 @@ bool runAllTests(int argc, char const *argv[]) {
   cute::suite s;
   // TODO(ckirchme) add your test here
   s.push_back(CUTE(preambleCheckerTest));
-  s.push_back(CUTE(checksumTest));
-  s.push_back(CUTE(checksumCheckerTest));
   s.push_back(CUTE(packageTest));
   s.push_back(CUTE(corruptPackageTest));
+  s.push_back(CUTE(corruptDataTest));
   s.push_back(CUTE(packageMinTest));
   s.push_back(CUTE(packageMaxTest));
   s.push_back(CUTE(packageOverflowTest));

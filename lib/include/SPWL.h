@@ -6,6 +6,17 @@
 #include <array>
 
 class SPWLPackage{
+ public:
+  static constexpr int PACKETSIZE = 512;
+  static constexpr int HEADERSIZE = 38;
+  static constexpr int PREAMBLESIZE = 7;
+  static constexpr int CHECKSUMSIZE = 32;
+  static constexpr char TRAILERSIZE = 1;
+  static constexpr int MAXDATASIZE = PACKETSIZE -
+                                     PREAMBLESIZE - HEADERSIZE - TRAILERSIZE;
+  static constexpr char PREAMBLE[] = "UUUUUUU";
+  static constexpr unsigned char TRAILER = 4;
+
  private:
   std::string data;
   uint16_t senderAddress;
@@ -15,18 +26,12 @@ class SPWLPackage{
   std::array<unsigned char, CHECKSUMSIZE> checksum;
   SPWLPackage(uint16_t senderAddress, char channel,
               std::string data, bool last);
+  static bool checkChecksum(std::array<unsigned char, CHECKSUMSIZE>
+      checksum, std::string data);
+  static std::array<unsigned char, CHECKSUMSIZE>
+      generateChecksum(std::string data);
 
  public:
-  static constexpr int PACKETSIZE = 512;
-  static constexpr int HEADERSIZE = 22;
-  static constexpr int PREAMBLESIZE = 7;
-  static constexpr int CHECKSUMSIZE = 16;
-  static constexpr char TRAILERSIZE = 1;
-  static constexpr int MAXDATASIZE = PACKETSIZE -
-      PREAMBLESIZE - HEADERSIZE - TRAILERSIZE;
-  static constexpr char PREAMBLE[] = "UUUUUUU";
-  static constexpr unsigned char TRAILER = 4;
-
   std::pair<SPWLPackage, bool> static encapsulateData(std::string data);
 
   std::pair<SPWLPackage, bool> static
@@ -36,10 +41,6 @@ class SPWLPackage{
 
   uint16_t static getLengthFromHeader(std::array<unsigned char, HEADERSIZE>
       header);
-
-  bool checkChecksum();
-
-  std::array<unsigned char, CHECKSUMSIZE> generateChecksum();
 
   std::string getData() const;
 

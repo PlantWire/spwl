@@ -9,7 +9,7 @@ all:	build_test
 
 run_test:
 	cd build && ./$(EXECUTABLE)
-	cd ../ && gcovr -r . -e "test/build/cute*" -e "test/build/ide_listener.h" -e "test/build/xml_listener.h" -e "test/build/SPWL-test.cpp"
+	cd ../ && gcovr -r . -e "test/build/cute*" -e "test/build/ide_listener.h" -e "test/build/xml_listener.h" -e "test/build/SPWL-test.cpp" -e "lib/build/sha256.h" -e "lib/build/sha256.cpp"
 
 build_test:
   ifeq ($(OS),Windows_NT)
