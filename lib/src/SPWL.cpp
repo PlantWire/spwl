@@ -5,8 +5,6 @@
 #include "../include/SPWL.h"
 #include "../include/crc16.h"
 
-#include <iostream>
-
 SPWLPacket::SPWLPacket(uint16_t senderAddress, char channel,
     DataContainer data, bool last = false) {
   this->senderAddress = senderAddress;
