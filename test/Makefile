@@ -9,7 +9,7 @@ all:	build_test
 
 run_test:
 	cd build && ./$(EXECUTABLE)
-	cd ../ && gcovr -r . -e "test/build/cute*" -e "test/build/ide_listener.h" -e "test/build/xml_listener.h" -e "test/build/SPWL-test.cpp" -e "lib/build/sha256.h" -e "lib/build/sha256.cpp"
+	cd ../ && gcovr -r . -e "test/build/cute*" -e "test/build/ide_listener.h" -e "test/build/xml_listener.h" -e "test/build/SPWL-test.cpp" -e "lib/build/crc16.h"
 
 build_test:
   ifeq ($(OS),Windows_NT)
@@ -20,7 +20,7 @@ build_test:
 		mkdir -p build/
   endif
 	$(CXX) -I cute/ src/$(EXECUTABLE).cpp -c $(CFLAGS) $(CXXFLAGS) $(CPPFLAGS) $(COVFLAGS) -o build/$(EXECUTABLE).o -std=c++17
-	$(CXX) build/$(EXECUTABLE).o $(COVFLAGS) -o build/$(EXECUTABLE) -L ../lib/build/ -lSPWL -lcrypto -Wall -Wextra -std=c++17
+	$(CXX) build/$(EXECUTABLE).o $(COVFLAGS) -o build/$(EXECUTABLE) -L ../lib/build/ -lSPWL -Wall -Wextra -std=c++17
 
 clean:
   ifeq ($(OS),Windows_NT)

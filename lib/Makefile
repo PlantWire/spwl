@@ -15,8 +15,7 @@ build_lib:
 		mkdir -p build/
   endif
 	$(CXX) src/SPWL.cpp -c $(CFLAGS) -g $(CXXFLAGS) $(CPPFLAGS) $(COVFLAGS) -o build/$(ARCHIVE).o -Wall -Wextra -std=c++17 -static
-	$(CXX) src/sha256.cpp -c $(CFLAGS) -g $(CXXFLAGS) $(CPPFLAGS) $(COVFLAGS) -o build/sha256.o -Wall -Wextra -std=c++17 -static
-	ar rcs build/$(ARCHIVE).a build/$(ARCHIVE).o build/sha256.o
+	ar rcs build/$(ARCHIVE).a build/$(ARCHIVE).o
 
 build_lib_prod:
   ifeq ($(OS),Windows_NT)
@@ -27,8 +26,7 @@ build_lib_prod:
 		mkdir -p build/
   endif
 	arm-linux-gnueabihf-g++ src/SPWL.cpp -c $(CFLAGS) -g $(CXXFLAGS) $(CPPFLAGS) -o build/$(ARCHIVE).o -Wall -Wextra -std=c++17 -static
-	arm-linux-gnueabihf-g++ src/sha256.cpp -c $(CFLAGS) -g $(CXXFLAGS) $(CPPFLAGS) -o build/sha256.o -Wall -Wextra -std=c++17 -static
-	ar rcs build/$(ARCHIVE).a build/$(ARCHIVE).o build/sha256.o
+	ar rcs build/$(ARCHIVE).a build/$(ARCHIVE).o
 
 clean:
   ifeq ($(OS),Windows_NT)
