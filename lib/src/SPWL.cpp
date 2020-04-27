@@ -1,27 +1,29 @@
-#include "../include/SPWL.h"
 #include <algorithm>
 #include <stdexcept>
 #include <string>
 
-SPWLPackage::SPWLPackage(uint16_t senderAddress, char channel,
-    std::string data, bool last = false) {
+#include "../include/SPWL.h"
+#include "../include/crc16.h"
+
+SPWLPacket::SPWLPacket(uint16_t senderAddress, char channel,
+    DataContainer data, bool last = false) {
   this->senderAddress = senderAddress;
   this->channel = channel;
   this->data = data;
   this->last = last;
-  this->length = data.size();
+  this->checksum = generateChecksum(data);
 }
 
-std::string SPWLPackage::getData() const {
+std::vector<unsigned char> SPWLPacket::getData() const {
   return this->data;
 }
 
-int SPWLPackage::rawDataSize() const {
-  return PREAMBLESIZE + HEADERSIZE + this->data.size() + TRAILERSIZE;
+int SPWLPacket::rawDataSize() const {
+  return PREAMBLESIZE + HEADERSIZE + this->data.size()
+      + CHECKSUMSIZE + TRAILERSIZE;
 }
 
-std::array<unsigned char, SPWLPackage::PACKETSIZE> SPWLPackage::
-    rawData() const {
+SPWLPacket::PacketContainer SPWLPacket::rawData() const {
   std::array<unsigned char, PACKETSIZE> output{};
 
   for (size_t i = 0; i < PREAMBLESIZE; i++) {
@@ -33,8 +35,8 @@ std::array<unsigned char, SPWLPackage::PACKETSIZE> SPWLPackage::
 
   output.at(9) = this->channel;
 
-  output.at(10) = static_cast<unsigned char>(this->length >> 8);
-  output.at(11) = static_cast<unsigned char>(this->length);
+  output.at(10) = static_cast<unsigned char>(this->data.size() >> 8);
+  output.at(11) = static_cast<unsigned char>(this->data.size());
 
   unsigned char last = 0;
   if (this->last) {
@@ -44,30 +46,29 @@ std::array<unsigned char, SPWLPackage::PACKETSIZE> SPWLPackage::
 
   auto outputIter = output.begin();
   std::advance(outputIter, 13);
-  std::string checksum = generateChecksum(this->data);
-  outputIter = std::copy(checksum.cbegin(), checksum.cend(), outputIter);
+  outputIter = std::copy(this->data.cbegin(), this->data.cend(), outputIter);
+  std::copy(this->checksum.cbegin(), this->checksum.cend(), outputIter);
 
-  std::copy(this->data.cbegin(), this->data.cend(), outputIter);
-
-  output.at(PREAMBLESIZE + HEADERSIZE + this->data.size()) = TRAILER;
+  output.at(PREAMBLESIZE + HEADERSIZE + this->data.size() + CHECKSUMSIZE)
+      = TRAILER;
 
   return output;
 }
 
-std::pair<SPWLPackage, bool> SPWLPackage::encapsulateData(std::string data) {
+std::pair<SPWLPacket, bool> SPWLPacket::encapsulateData(DataContainer data) {
   if (data.size() > MAXDATASIZE) {
-    SPWLPackage package{0, 0, "", 0};
-    std::pair<SPWLPackage, bool> result{package, false};
+    SPWLPacket packet{0, 0, DataContainer{}, false};
+    std::pair<SPWLPacket, bool> result{packet, false};
     return result;
   }
-  SPWLPackage package{8, 24, data, true};
-  std::pair<SPWLPackage, bool> result{package, true};
+  SPWLPacket packet{8, 24, data, true};
+  std::pair<SPWLPacket, bool> result{packet, true};
   return result;
 }
 
-std::pair<SPWLPackage, bool> SPWLPackage::
-  encapsulatePackage(std::array<unsigned char, PACKETSIZE> rawData) {
-  std::array<unsigned char, PREAMBLESIZE> preamble;
+std::pair<SPWLPacket, bool> SPWLPacket::
+    encapsulatePacket(PacketContainer rawData) {
+  PreambleContainer preamble{};
   std::copy(rawData.begin(), rawData.begin() + PREAMBLESIZE, preamble.begin());
 
   if (checkPreamble(preamble)) {
@@ -83,28 +84,31 @@ std::pair<SPWLPackage, bool> SPWLPackage::
     if (rawData.at(12) == 255) {
       last = true;
     }
-
     if (dataLenght <= MAXDATASIZE) {
-      std::string checksum{rawData.begin() + 13,
-                           rawData.begin() + 13 + CHECKSUMSIZE};
-      std::string data{rawData.begin() + PREAMBLESIZE + HEADERSIZE,
-                       rawData.begin() + PREAMBLESIZE + HEADERSIZE
-                       + dataLenght};
+      DataContainer data{};
+      std::copy(rawData.cbegin() + PREAMBLESIZE + HEADERSIZE,
+                rawData.cbegin() + PREAMBLESIZE + HEADERSIZE + dataLenght,
+                std::back_inserter(data));
+
+      ChecksumContainer checksum{};
+      std::copy(rawData.cbegin() + PREAMBLESIZE + HEADERSIZE + dataLenght,
+                rawData.cbegin() + PREAMBLESIZE + HEADERSIZE + dataLenght
+                + CHECKSUMSIZE, checksum.begin());
 
       if (checkChecksum(checksum, data)) {
-        SPWLPackage package{senderAddress, channel, data, last};
-        std::pair<SPWLPackage, bool> result{package, true};
+        SPWLPacket packet{senderAddress, channel, data, last};
+        std::pair<SPWLPacket, bool> result{packet, true};
         return result;
       }
     }
   }
-  SPWLPackage package{0, 0, "", 0};
-  std::pair<SPWLPackage, bool> result{package, false};
+  SPWLPacket packet{0, 0, DataContainer{}, false};
+  std::pair<SPWLPacket, bool> result{packet, false};
   return result;
 }
 
-bool SPWLPackage::
-    checkPreamble(std::array<unsigned char, PREAMBLESIZE> preamble) {
+bool SPWLPacket::
+    checkPreamble(PreambleContainer preamble) {
   for (size_t i = 0; i < PREAMBLESIZE; i++) {
     if (preamble[i] != PREAMBLE[i]) {
       return false;
@@ -113,17 +117,23 @@ bool SPWLPackage::
   return true;
 }
 
-uint16_t SPWLPackage::getLengthFromHeader(std::array<unsigned char, HEADERSIZE>
-    header) {
+uint16_t SPWLPacket::getLengthFromHeader(HeaderContainer header) {
   uint16_t length = header.at(3) << 8;
   length += header.at(4);
   return length;
 }
 
-bool SPWLPackage::checkChecksum(std::string checksum, std::string data) {
+bool SPWLPacket::checkChecksum(ChecksumContainer checksum, DataContainer data) {
   return (checksum == generateChecksum(data));
 }
 
-std::string SPWLPackage::generateChecksum(std::string data) {
-  return "HelloWorld!!!!!!";
+SPWLPacket::ChecksumContainer SPWLPacket::generateChecksum(DataContainer data) {
+  CRC16 crc{};
+  PacketContainer input;
+  std::copy(data.cbegin(), data.cend(), input.begin());
+  crc.update(input, data.size());
+  ChecksumContainer result;
+  result.at(0) = static_cast<uint8_t>(crc.get() >> 8);
+  result.at(1) = static_cast<uint8_t>(crc.get());
+  return result;
 }

@@ -2,47 +2,51 @@
 #define LIB_INCLUDE_SPWL_H_
 
 #include <utility>
-#include <string>
 #include <array>
+#include <vector>
 
-class SPWLPackage{
+class SPWLPacket{
+ public:
+  static constexpr int PACKETSIZE = 512;
+  static constexpr int HEADERSIZE = 6;
+  static constexpr int PREAMBLESIZE = 7;
+  static constexpr int CHECKSUMSIZE = 2;
+  static constexpr char TRAILERSIZE = 1;
+  static constexpr int MAXDATASIZE = PACKETSIZE - PREAMBLESIZE - HEADERSIZE
+                                      - CHECKSUMSIZE - TRAILERSIZE;
+  static constexpr char PREAMBLE[] = "UUUUUUU";
+  static constexpr unsigned char TRAILER = 4;
+
+  using PacketContainer = std::array<unsigned char, PACKETSIZE>;
+  using HeaderContainer = std::array<unsigned char, HEADERSIZE>;
+  using PreambleContainer = std::array<unsigned char, PREAMBLESIZE>;
+  using DataContainer = std::vector<unsigned char>;
+  using ChecksumContainer = std::array<unsigned char, CHECKSUMSIZE>;
+
  private:
-  std::string data;
+  DataContainer data;
   uint16_t senderAddress;
   uint16_t length;
   char channel;
   bool last;
-  SPWLPackage(uint16_t senderAddress, char channel,
-              std::string data, bool last);
+  ChecksumContainer checksum;
+  SPWLPacket(uint16_t senderAddress, char channel,
+      DataContainer data, bool last);
+  static bool checkChecksum(ChecksumContainer checksum, DataContainer data);
+  static ChecksumContainer generateChecksum(DataContainer data);
 
  public:
-  static constexpr int PACKETSIZE = 512;
-  static constexpr int HEADERSIZE = 22;
-  static constexpr int PREAMBLESIZE = 7;
-  static constexpr int CHECKSUMSIZE = 16;
-  static constexpr char TRAILERSIZE = 1;
-  static constexpr int MAXDATASIZE = PACKETSIZE -
-      PREAMBLESIZE - HEADERSIZE - TRAILERSIZE;
-  static constexpr char PREAMBLE[] = "UUUUUUU";
-  static constexpr unsigned char TRAILER = 4;
+  std::pair<SPWLPacket, bool> static encapsulateData(DataContainer data);
 
-  std::pair<SPWLPackage, bool> static encapsulateData(std::string data);
+  std::pair<SPWLPacket, bool> static encapsulatePacket(PacketContainer rawData);
 
-  std::pair<SPWLPackage, bool> static
-      encapsulatePackage(std::array<unsigned char, PACKETSIZE> rawData);
+  bool static checkPreamble(PreambleContainer preamble);
 
-  bool static checkPreamble(std::array<unsigned char, PREAMBLESIZE> preamble);
+  uint16_t static getLengthFromHeader(HeaderContainer header);
 
-  uint16_t static getLengthFromHeader(std::array<unsigned char, HEADERSIZE>
-      header);
+  DataContainer getData() const;
 
-  bool static checkChecksum(std::string checksum, std::string data);
-
-  std::string static generateChecksum(std::string data);
-
-  std::string getData() const;
-
-  std::array<unsigned char, PACKETSIZE> rawData() const;
+  PacketContainer rawData() const;
 
   int rawDataSize() const;
 };

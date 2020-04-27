@@ -14,7 +14,7 @@ build_lib:
   else
 		mkdir -p build/
   endif
-	$(CXX) src/SPWL.cpp -c $(CFLAGS) -g $(CXXFLAGS) $(CPPFLAGS) $(COVFLAGS) -o build/$(ARCHIVE).o -Wall -Wextra -std=c++17
+	$(CXX) src/SPWL.cpp -c $(CFLAGS) -g $(CXXFLAGS) $(CPPFLAGS) $(COVFLAGS) -o build/$(ARCHIVE).o -Wall -Wextra -std=c++17 -static
 	ar rcs build/$(ARCHIVE).a build/$(ARCHIVE).o
 
 build_lib_prod:
@@ -25,13 +25,15 @@ build_lib_prod:
   else
 		mkdir -p build/
   endif
-	arm-linux-gnueabihf-g++ src/SPWL.cpp -c $(CFLAGS) -g $(CXXFLAGS) $(CPPFLAGS) -o build/$(ARCHIVE).o -Wall -Wextra -std=c++17
+	arm-linux-gnueabihf-g++ src/SPWL.cpp -c $(CFLAGS) -g $(CXXFLAGS) $(CPPFLAGS) -o build/$(ARCHIVE).o -Wall -Wextra -std=c++17 -static
 	ar rcs build/$(ARCHIVE).a build/$(ARCHIVE).o
 
 clean:
   ifeq ($(OS),Windows_NT)
 		del build/$(ARCHIVE).*
+		del build/sha256.*
   else
 		rm build/$(ARCHIVE).*
+		rm build/sha256.*
   endif
 
