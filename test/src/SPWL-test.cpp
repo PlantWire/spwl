@@ -9,25 +9,35 @@
 #include "../../lib/include/crc16.h"
 #include "../include/SPWL-test.h"
 
+const std::vector<unsigned char> hello {'H', 'e', 'l', 'l', 'o'};
+const std::vector<unsigned char> data1 {'M', 'y', 'L', 'i', 't', 't', 'l', 'e',
+                                  'C', 'p', 'p'};
+const std::vector<unsigned char> data2 { 'I', '\'', 'm', ' ', 'a', ' ', 'l', 'i', 't', 't', 'l', 'e', ' ', 'b', 'i', 't', ' ', 'l', 'o', 'n', 'g',
+		'e', 'r', ',', ' ', 'b', 'e', 'a', 'r', ' ', 'w', 'i', 't', 'h', ' ', 'm', 'e', '.', ' ', 'T', 'h', 'e', ' ', 'T', 'e', 's', 't', ' ', 's',
+		'h', 'o', 'u', 'l', 'd', ' ', 's', 't', 'i', 'l', 'l', ' ', 's', 'u', 'c', 'c', 'e', 'e', 'd', '.', '\n', 'T', 'h', 'i', 's', ' ', 'i', 's', ' ',
+		'i', 'm', 'p', 'o', 'r', 't', 'a', 'n', 't', ' ', 't', 'o', ' ', 'g', 'u', 'a', 'r', 'a', 'n', 't', 'e', 'e', ' ', 'i', 't', ' ', 'd', 'o', 'e',
+		's', 'n', '\'', 't', ' ', 'j', 'u', 's', 't', ' ', 't', 'e', 's', 't', 's', ' ', 'a', ' ', 'f', 'i', 'x', 'a', 't', 'e', 'd', ' ', 'r', 'e',
+		's', 'u', 'l', 't', '.' };
+
 // Begin CRC-Tests
 void crc1Test() {
   CRC16 crc{};
   crc.update(std::array<unsigned char, 9>{'1', '2', '3', '4', '5',
                                           '6', '7', '8', '9'}, 9);
-  ASSERT_EQUAL(0xbb3d, crc.get());
+  ASSERT_EQUALM("Encryption with CRC-16 doesn't match.", 0xbb3d, crc.get());
 }
 
 void crc2Test() {
   CRC16 crc{};
   crc.update(std::array<unsigned char, 10>{'H', 'e', 'l', 'l', 'o',
                                           'W', 'o', 'r', 'l', 'd'}, 10);
-  ASSERT_EQUAL(0x6053, crc.get());
+  ASSERT_EQUALM("Encryption with CRC-16 doesn't match.", 0x6053, crc.get());
 }
 
 void crc3Test() {
   CRC16 crc{};
   crc.update(std::array<unsigned char, 3>{'C', 'P', 'P'}, 3);
-  ASSERT_EQUAL(0xe8cd, crc.get());
+  ASSERT_EQUALM("Encryption with CRC-16 doesn't match.", 0xe8cd, crc.get());
 }
 // End CRC-Tests
 
@@ -35,134 +45,94 @@ void crc3Test() {
 void preambleCheckerTest() {
   std::array<unsigned char, SPWLPacket::PREAMBLESIZE> input{};
   std::string testPreamble = "UUUUUUU";
+  ASSERTM("Empty preample was correct.", !SPWLPacket::checkPreamble(input));
+
   for (size_t i = 0; i < testPreamble.size(); i++) {
-    input[i] = testPreamble[i];
+	input[i] = testPreamble[i];
   }
-  ASSERT_EQUAL(SPWLPacket::checkPreamble(input), true);
+  ASSERTM("Preample is wrong.", SPWLPacket::checkPreamble(input));
 }
 
 void packetTest() {
-  std::vector<unsigned char> data{'H', 'e', 'l', 'l', 'o'};
-  std::pair<SPWLPacket, bool> res = SPWLPacket::encapsulateData(data);
-  if (res.second) {
-    SPWLPacket packet{res.first};
-    std::pair<SPWLPacket, bool> res =
-        SPWLPacket::encapsulatePacket(packet.rawData());
-
-    if (res.second) {
-      ASSERT_EQUAL(data, res.first.getData());
-    } else {
-      ASSERT_EQUAL("Packet not valid", "");
-    }
-  } else {
-    ASSERT_EQUAL("encapsulateData packet not valid", "");
-  }
+  
+  std::pair<SPWLPacket, bool> res = SPWLPacket::encapsulateData(hello);
+  ASSERTM("Result is missing.", res.second);
+  SPWLPacket packet{res.first};
+  res = SPWLPacket::encapsulatePacket(packet.rawData());
+  ASSERTM("Result is missing.", res.second);
+  ASSERT_EQUALM("Data was not in encapsulation.", hello, res.first.getData());
 }
 
 void corruptPacketTest() {
-  std::vector<unsigned char> data{'H', 'e', 'l', 'l', 'o'};
-  std::pair<SPWLPacket, bool> res = SPWLPacket::encapsulateData(data);
-  if (res.second) {
-    auto raw = res.first.rawData();
-    raw[0] = 5;
-    res = SPWLPacket::encapsulatePacket(raw);
-
-    if (!res.second) {
-      ASSERT_EQUAL("Packet not valid", "Packet not valid");
-    } else {
-      ASSERT_EQUAL("Packet should not be valid", "valid");
-    }
-  } else {
-    ASSERT_EQUAL("encapsulateData Packet not valid", "");
-  }
+  std::pair<SPWLPacket, bool> res = SPWLPacket::encapsulateData(hello);
+  
+  ASSERTM("Result is missing.", res.second);
+  auto raw = res.first.rawData();
+  raw[0] = 5;
+  res = SPWLPacket::encapsulatePacket(raw);
+  ASSERTM("Corrupt data was encapsulated", !res.second);
 }
 
 void corruptDataTest() {
-  std::vector<unsigned char> data{'H', 'e', 'l', 'l', 'o'};
-  std::pair<SPWLPacket, bool> res = SPWLPacket::encapsulateData(data);
-  if (res.second) {
-    auto raw = res.first.rawData();
-    raw[SPWLPacket::PREAMBLESIZE + SPWLPacket::HEADERSIZE + 1] = 5;
-    res = SPWLPacket::encapsulatePacket(raw);
-    if (!res.second) {
-      ASSERT_EQUAL("Packet not valid", "Packet not valid");
-    } else {
-      ASSERT_EQUAL("Packet should not be valid", "valid");
-    }
-  } else {
-    ASSERT_EQUAL("encapsulateData Packet not valid", "");
-  }
+  std::pair<SPWLPacket, bool> res = SPWLPacket::encapsulateData(hello);
+  
+  ASSERTM("Result is missing.", res.second);
+  auto raw = res.first.rawData();
+  raw[SPWLPacket::PREAMBLESIZE + SPWLPacket::HEADERSIZE + 1] = 5;
+  res = SPWLPacket::encapsulatePacket(raw);
+  ASSERTM("Invalid packet was encapsulated", !res.second);
 }
 
 void packetMinTest() {
   std::vector<unsigned char> data{'o'};
-
   std::pair<SPWLPacket, bool> res = SPWLPacket::encapsulateData(data);
-  if (res.second) {
-    SPWLPacket packet{res.first};
-    res = SPWLPacket::encapsulatePacket(packet.rawData());
-
-    if (res.second) {
-      ASSERT_EQUAL(data, res.first.getData());
-    } else {
-      ASSERT_EQUAL("Packet not valid", "");
-    }
-  } else {
-    ASSERT_EQUAL("encapsulateData packet not valid", "");
-  }
+  
+  ASSERTM("Result is missing.", res.second);
+  SPWLPacket packet{res.first};
+  res = SPWLPacket::encapsulatePacket(packet.rawData());
+  ASSERTM("Result is missing.", res.second);
+  ASSERT_EQUALM("Minimum sized data couldn't be encapsulated.", data, res.first.getData());
 }
 
 void packetMaxTest() {
   std::vector<unsigned char> data(SPWLPacket::MAXDATASIZE, 'h');
-
   std::pair<SPWLPacket, bool> res = SPWLPacket::encapsulateData(data);
-  if (res.second) {
-    SPWLPacket packet{res.first};
-    res = SPWLPacket::encapsulatePacket(packet.rawData());
-    if (res.second) {
-      ASSERT_EQUAL(data, res.first.getData());
-    } else {
-      ASSERT_EQUAL("Packet not valid", "");
-    }
-  } else {
-    ASSERT_EQUAL("encapsulateData packet not valid", "");
-  }
+  
+  ASSERTM("Result is missing.", res.second);
+  SPWLPacket packet{res.first};
+  res = SPWLPacket::encapsulatePacket(packet.rawData());
+  ASSERTM("Result is missing.", res.second);
+  ASSERT_EQUALM("Maximum sized data couldn't be encapsulated.", data, res.first.getData());
 }
 
 void packetOverflowTest() {
   std::vector<unsigned char> data(SPWLPacket::MAXDATASIZE + 1, 'h');
   std::pair<SPWLPacket, bool> res = SPWLPacket::encapsulateData(data);
-  ASSERT_EQUAL(res.second, false);
+  ASSERTM("Oversized data was encapsulated", !res.second);
 }
 
 void lengthExtractorTest() {
-  std::vector<unsigned char> data{'M', 'y', 'L', 'i', 't', 't', 'l', 'e',
-                                  'C', 'p', 'p'};
-  std::pair<SPWLPacket, bool> result = SPWLPacket::encapsulateData(data);
-  if (result.second) {
-    std::array<unsigned char, SPWLPacket::PACKETSIZE>
-        rawData{result.first.rawData()};
-
-    std::array<unsigned char, SPWLPacket::HEADERSIZE> header{};
-    std::copy(rawData.cbegin() + SPWLPacket::PREAMBLESIZE,
-        rawData.cbegin() + SPWLPacket::PREAMBLESIZE + SPWLPacket::HEADERSIZE,
-        header.begin());
-    uint16_t length = SPWLPacket::getLengthFromHeader(header);
-    ASSERT_EQUAL(11, length);
-  } else {
-    ASSERT_EQUAL("encapsulateData packet not valid", "");
-  }
+  std::pair<SPWLPacket, bool> result = SPWLPacket::encapsulateData(data1);
+  
+  ASSERTM("Result is missing.", result.second);
+  std::array<unsigned char, SPWLPacket::PACKETSIZE>
+      rawData{result.first.rawData()};
+  std::array<unsigned char, SPWLPacket::HEADERSIZE> header{};
+  std::copy(rawData.cbegin() + SPWLPacket::PREAMBLESIZE,
+      rawData.cbegin() + SPWLPacket::PREAMBLESIZE + SPWLPacket::HEADERSIZE,
+      header.begin());
+  uint16_t length = SPWLPacket::getLengthFromHeader(header);
+  ASSERT_EQUALM("Length was not correctly extracted.", 11, length);
 }
 
 void rawDataSizeTest() {
-  std::vector<unsigned char> data{'M', 'y', 'L', 'i', 't', 't', 'l', 'e',
-                                  'C', 'p', 'p'};
-  std::pair<SPWLPacket, bool> result = SPWLPacket::encapsulateData(data);
-  if (result.second) {
-    ASSERT_EQUAL(7 + 6 + 11 + 2 + 1, result.first.rawDataSize());
-  } else {
-    ASSERT_EQUAL("encapsulateData packet not valid", "");
-  }
+  std::pair<SPWLPacket, bool> result = SPWLPacket::encapsulateData(data1);
+  ASSERTM("Result is missing.", result.second);
+  ASSERT_EQUALM("Data size wasn't correctly derived.", 7 + 6 + 11 + 2 + 1, result.first.rawDataSize());
+
+  result = SPWLPacket::encapsulateData(data2);
+  ASSERTM("Result is missing.", result.second);
+  ASSERT_EQUALM("Data size wasn't correctly derived.", 7 + 6 + data2.size() + 2 + 1, result.first.rawDataSize());
 }
 // End SPWL-Tests
 bool runAllTests(int argc, char const *argv[]) {

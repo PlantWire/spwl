@@ -5,11 +5,11 @@ COVFLAGS += -fprofile-arcs
 COVFLAGS += -ftest-coverage
 COVFLAGS += -fPIC
 
-all:	build_test
+all:	build_test run_test
 
 run_test:
 	cd build && ./$(EXECUTABLE)
-	cd ../ && gcovr -r . -e "test/build/cute*" -e "test/build/ide_listener.h" -e "test/build/xml_listener.h" -e "test/build/SPWL-test.cpp" -e "lib/build/crc16.h"
+	cd ../ && gcovr -r . -e "test/build/cute*" -e "test/build/ide_listener.h" -e "test/build/xml_listener.h" -e "test/build/SPWL-test.cpp" -e "lib/include/crc16.h" -e "lib/build/crc16.h" -e "test/cute"
 
 build_test:
   ifeq ($(OS),Windows_NT)
