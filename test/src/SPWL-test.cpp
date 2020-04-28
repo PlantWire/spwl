@@ -36,13 +36,15 @@ void crc2Test() {
   CRC16 crc { };
   crc.update(std::array<unsigned char, 10> { 'H', 'e', 'l', 'l', 'o', 'W', 'o',
       'r', 'l', 'd' }, 10);
-  ASSERT_EQUALM("Encryption with CRC-16 doesn't match.", 0x6053, crc.get());
+  ASSERT_EQUALM("Hash does not match with CRC-16 equivalent.", 0x6053,
+      crc.get());
 }
 
 void crc3Test() {
   CRC16 crc { };
   crc.update(std::array<unsigned char, 3> { 'C', 'P', 'P' }, 3);
-  ASSERT_EQUALM("Encryption with CRC-16 doesn't match.", 0xe8cd, crc.get());
+  ASSERT_EQUALM("Hash does not match with CRC-16 equivalent.", 0xe8cd,
+      crc.get());
 }
 // End CRC-Tests
 
