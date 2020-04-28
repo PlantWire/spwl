@@ -133,7 +133,7 @@ void lengthExtractorTest() {
 void rawDataSizeTest() {
   std::pair<SPWLPacket, bool> result = SPWLPacket::encapsulateData(data1);
   ASSERTM("Result is missing.", result.second);
-  ASSERT_EQUALM("Data size wasn't correctly derived.", 7 + 6 + 11 + 2 + 1,
+  ASSERT_EQUALM("Data size wasn't correctly derived.", 7 + 6 + data1.size() + 2 + 1,
       result.first.rawDataSize());
 
   result = SPWLPacket::encapsulateData(data2);
