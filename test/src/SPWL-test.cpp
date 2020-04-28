@@ -28,7 +28,7 @@ void crc1Test() {
   CRC16 crc { };
   crc.update(std::array<unsigned char, 9> { '1', '2', '3', '4', '5', '6', '7',
       '8', '9' }, 9);
-  ASSERT_EQUALM("Encryption with CRC-16 doesn't match.", 0xbb3d, crc.get());
+  ASSERT_EQUALM("Hash does not match with CRC-16 equivalent.", 0xbb3d, crc.get());
 }
 
 void crc2Test() {
