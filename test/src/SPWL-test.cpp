@@ -28,7 +28,8 @@ void crc1Test() {
   CRC16 crc { };
   crc.update(std::array<unsigned char, 9> { '1', '2', '3', '4', '5', '6', '7',
       '8', '9' }, 9);
-  ASSERT_EQUALM("Hash does not match with CRC-16 equivalent.", 0xbb3d, crc.get());
+  ASSERT_EQUALM("Hash does not match with CRC-16 equivalent.", 0xbb3d,
+      crc.get());
 }
 
 void crc2Test() {
@@ -133,8 +134,8 @@ void lengthExtractorTest() {
 void rawDataSizeTest() {
   std::pair<SPWLPacket, bool> result = SPWLPacket::encapsulateData(data1);
   ASSERTM("Result is missing.", result.second);
-  ASSERT_EQUALM("Data size wasn't correctly derived.", 7 + 6 + data1.size() + 2 + 1,
-      result.first.rawDataSize());
+  ASSERT_EQUALM("Data size wasn't correctly derived.",
+      7 + 6 + data1.size() + 2 + 1, result.first.rawDataSize());
 
   result = SPWLPacket::encapsulateData(data2);
   ASSERTM("Result is missing.", result.second);
