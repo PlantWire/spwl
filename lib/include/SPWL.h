@@ -43,8 +43,7 @@ class SPWLPacket{
       const HeaderContainer& header, const DataContainer& data);
   static ChecksumContainer generateChecksum(const HeaderContainer& header,
       const DataContainer& data);
-  static HeaderContainer getRawFromHeader(const SPWLHeader& header,
-      const uint16_t dataSize);
+  static HeaderContainer getRawFromHeader(const SPWLHeader& header);
 
  public:
   std::pair<SPWLPacket, bool> static encapsulateData(const DataContainer& data);

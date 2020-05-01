@@ -10,9 +10,9 @@ SPWLPacket::SPWLPacket(uint16_t senderAddress, char channel,
   this->header.senderAddress = senderAddress;
   this->header.channel = channel;
   this->header.last = last;
+  this->header.length = data.size();
   this->data = data;
-  this->checksum = generateChecksum(getRawFromHeader(header, data.size()),
-      data);
+  this->checksum = generateChecksum(getRawFromHeader(header), data);
 }
 
 std::vector<unsigned char> SPWLPacket::getData() const {
@@ -31,7 +31,7 @@ SPWLPacket::PacketContainer SPWLPacket::rawData() const {
     output.at(i) = PREAMBLE[i];
   }
 
-  HeaderContainer header = getRawFromHeader(this->header, this->data.size());
+  HeaderContainer header = getRawFromHeader(this->header);
 
   auto outputIter = output.begin();
   std::advance(outputIter, PREAMBLESIZE);
@@ -108,7 +108,7 @@ uint16_t SPWLPacket::getLengthFromHeader(const HeaderContainer& header) {
 }
 
 SPWLPacket::HeaderContainer SPWLPacket::getRawFromHeader(
-    const SPWLHeader& header, const uint16_t dataSize) {
+    const SPWLHeader& header) {
   HeaderContainer result{};
 
   result.at(0) = static_cast<unsigned char>(header.senderAddress >> 8);
@@ -116,8 +116,8 @@ SPWLPacket::HeaderContainer SPWLPacket::getRawFromHeader(
 
   result.at(2) = header.channel;
 
-  result.at(3) = static_cast<unsigned char>(dataSize >> 8);
-  result.at(4) = static_cast<unsigned char>(dataSize);
+  result.at(3) = static_cast<unsigned char>(header.length >> 8);
+  result.at(4) = static_cast<unsigned char>(header.length);
 
   unsigned char last = 0;
   if (header.last) {
