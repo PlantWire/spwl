@@ -20,8 +20,8 @@
 
 using crc_t = uint_fast16_t;
 
-class CRC16{
- private:
+// For usage in arduino-cli the table has to be outside the class
+namespace crc16_table {
   static constexpr crc_t crc_table[256] = {
       0x0000, 0xc0c1, 0xc181, 0x0140, 0xc301, 0x03c0, 0x0280, 0xc241,
       0xc601, 0x06c0, 0x0780, 0xc741, 0x0500, 0xc5c1, 0xc481, 0x0440,
@@ -56,6 +56,10 @@ class CRC16{
       0x4400, 0x84c1, 0x8581, 0x4540, 0x8701, 0x47c0, 0x4680, 0x8641,
       0x8201, 0x42c0, 0x4380, 0x8341, 0x4100, 0x81c1, 0x8081, 0x4040
   };
+}
+
+class CRC16{
+ private:
   static const crc_t initValue = 0x0000;
   crc_t crc;
 
@@ -66,13 +70,13 @@ class CRC16{
 
   template <std::size_t R>
   void update(std::array<unsigned char, R> const data, size_t size) {
-    unsigned int tbl_idx;
+    unsigned int tableId;
 
     int i = 0;
 
     while (size--) {
-      tbl_idx = (this->crc ^ data.at(i)) & 0xff;
-      this->crc = (crc_table[tbl_idx] ^ (this->crc  >> 8)) & 0xffff;
+      tableId = (this->crc ^ data.at(i)) & 0xff;
+      this->crc = (crc16_table::crc_table[tableId] ^ (this->crc >> 8)) & 0xffff;
       i++;
     }
     this->crc = this->crc & 0xffff;
