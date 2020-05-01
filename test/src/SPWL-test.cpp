@@ -172,7 +172,7 @@ void headerCreate1Test() {
       header.senderAddress);
   ASSERT_EQUALM("Channel was not correctly extracted.", 23, header.channel);
   ASSERT_EQUALM("Length was not correctly extracted.", data1.size(),
-      header.length);
+      header.dataSize);
   ASSERTM("Last was not correctly extracted.", header.last);
 }
 
@@ -192,7 +192,7 @@ void headerCreate2Test() {
                 header.senderAddress);
   ASSERT_EQUALM("Channel was not correctly extracted.", 23, header.channel);
   ASSERT_EQUALM("Length was not correctly extracted.", data2.size(),
-                header.length);
+                header.dataSize);
   ASSERTM("Last was not correctly extracted.", header.last);
 }
 

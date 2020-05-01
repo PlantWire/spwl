@@ -10,7 +10,7 @@ SPWLPacket::SPWLPacket(uint16_t senderAddress, char channel,
   this->header.senderAddress = senderAddress;
   this->header.channel = channel;
   this->header.last = last;
-  this->header.length = data.size();
+  this->header.dataSize = data.size();
   this->data = data;
   this->checksum = generateChecksum(getRawFromHeader(header), data);
 }
@@ -70,11 +70,11 @@ std::pair<SPWLPacket, bool> SPWLPacket::
     std::advance(inputIterator, HEADERSIZE);
     SPWLHeader header = getHeaderFromRaw(rawHeader);
 
-    if (header.length <= MAXDATASIZE) {
+    if (header.dataSize <= MAXDATASIZE) {
       DataContainer data{};
-      std::copy(inputIterator, inputIterator + header.length,
+      std::copy(inputIterator, inputIterator + header.dataSize,
           std::back_inserter(data));
-      std::advance(inputIterator, header.length);
+      std::advance(inputIterator, header.dataSize);
 
       ChecksumContainer checksum{};
       std::copy(inputIterator, inputIterator + CHECKSUMSIZE, checksum.begin());
@@ -104,7 +104,7 @@ bool SPWLPacket::
 
 uint16_t SPWLPacket::getLengthFromHeader(const HeaderContainer& header) {
   SPWLHeader result = getHeaderFromRaw(header);
-  return result.length;
+  return result.dataSize;
 }
 
 SPWLPacket::HeaderContainer SPWLPacket::getRawFromHeader(
@@ -116,8 +116,8 @@ SPWLPacket::HeaderContainer SPWLPacket::getRawFromHeader(
 
   result.at(2) = header.channel;
 
-  result.at(3) = static_cast<unsigned char>(header.length >> 8);
-  result.at(4) = static_cast<unsigned char>(header.length);
+  result.at(3) = static_cast<unsigned char>(header.dataSize >> 8);
+  result.at(4) = static_cast<unsigned char>(header.dataSize);
 
   unsigned char last = 0;
   if (header.last) {
@@ -136,8 +136,8 @@ SPWLHeader SPWLPacket::getHeaderFromRaw(const HeaderContainer& header) {
 
   result.channel = header.at(2);
 
-  result.length = header.at(3) << 8;
-  result.length += header.at(4);
+  result.dataSize = header.at(3) << 8;
+  result.dataSize += header.at(4);
 
   result.last = false;
   if (header.at(5) == 255) {

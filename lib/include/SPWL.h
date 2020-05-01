@@ -7,7 +7,7 @@
 
 typedef struct {
   uint16_t senderAddress;
-  uint16_t length;
+  uint16_t dataSize;
   char channel;
   bool last;
 } SPWLHeader;
