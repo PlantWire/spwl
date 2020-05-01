@@ -7,11 +7,12 @@
 
 SPWLPacket::SPWLPacket(uint16_t senderAddress, char channel,
     DataContainer data, bool last = false) {
-  this->senderAddress = senderAddress;
-  this->channel = channel;
+  this->header.senderAddress = senderAddress;
+  this->header.channel = channel;
+  this->header.last = last;
   this->data = data;
-  this->last = last;
-  this->checksum = generateChecksum(data);
+  this->checksum = generateChecksum(getRawFromHeader(header, data.size()),
+      data);
 }
 
 std::vector<unsigned char> SPWLPacket::getData() const {
@@ -30,73 +31,57 @@ SPWLPacket::PacketContainer SPWLPacket::rawData() const {
     output.at(i) = PREAMBLE[i];
   }
 
-  output.at(7) = static_cast<unsigned char>(this->senderAddress >> 8);
-  output.at(8) = static_cast<unsigned char>(this->senderAddress);
-
-  output.at(9) = this->channel;
-
-  output.at(10) = static_cast<unsigned char>(this->data.size() >> 8);
-  output.at(11) = static_cast<unsigned char>(this->data.size());
-
-  unsigned char last = 0;
-  if (this->last) {
-    last = 255;
-  }
-  output.at(12) = last;
+  HeaderContainer header = getRawFromHeader(this->header, this->data.size());
 
   auto outputIter = output.begin();
-  std::advance(outputIter, 13);
+  std::advance(outputIter, PREAMBLESIZE);
+  outputIter = std::copy(header.cbegin(), header.cend(), outputIter);
   outputIter = std::copy(this->data.cbegin(), this->data.cend(), outputIter);
-  std::copy(this->checksum.cbegin(), this->checksum.cend(), outputIter);
-
-  output.at(PREAMBLESIZE + HEADERSIZE + this->data.size() + CHECKSUMSIZE)
-      = TRAILER;
+  outputIter = std::copy(this->checksum.cbegin(), this->checksum.cend(),
+      outputIter);
+  *outputIter = TRAILER;
 
   return output;
 }
 
-std::pair<SPWLPacket, bool> SPWLPacket::encapsulateData(DataContainer data) {
+std::pair<SPWLPacket, bool> SPWLPacket::encapsulateData(
+    const DataContainer& data) {
   if (data.size() > MAXDATASIZE) {
     SPWLPacket packet{0, 0, DataContainer{}, false};
     std::pair<SPWLPacket, bool> result{packet, false};
     return result;
   }
-  SPWLPacket packet{8, 24, data, true};
+  SPWLPacket packet{ADDRESS, CHANNEL, data, true};
   std::pair<SPWLPacket, bool> result{packet, true};
   return result;
 }
 
 std::pair<SPWLPacket, bool> SPWLPacket::
-    encapsulatePacket(PacketContainer rawData) {
+    encapsulatePacket(const PacketContainer& rawData) {
   PreambleContainer preamble{};
   std::copy(rawData.begin(), rawData.begin() + PREAMBLESIZE, preamble.begin());
 
   if (checkPreamble(preamble)) {
-    uint16_t senderAddress = rawData.at(0) << 8;
-    senderAddress += rawData.at(8);
+    auto inputIterator = rawData.cbegin();
+    std::advance(inputIterator, PREAMBLESIZE);
 
-    char channel = rawData.at(9);
+    HeaderContainer rawHeader{};
+    std::copy(inputIterator, inputIterator + HEADERSIZE, rawHeader.begin());
+    std::advance(inputIterator, HEADERSIZE);
+    SPWLHeader header = getHeaderFromRaw(rawHeader);
 
-    uint16_t dataLenght = rawData.at(10) << 8;
-    dataLenght += rawData.at(11);
-
-    bool last = false;
-    if (rawData.at(12) == 255) {
-      last = true;
-    }
-    if (dataLenght <= MAXDATASIZE) {
+    if (header.length <= MAXDATASIZE) {
       DataContainer data{};
-      std::copy(rawData.cbegin() + PREAMBLESIZE + HEADERSIZE,
-                rawData.cbegin() + PREAMBLESIZE + HEADERSIZE + dataLenght,
-                std::back_inserter(data));
+      std::copy(inputIterator, inputIterator + header.length,
+          std::back_inserter(data));
+      std::advance(inputIterator, header.length);
 
       ChecksumContainer checksum{};
-      std::copy(rawData.cbegin() + PREAMBLESIZE + HEADERSIZE + dataLenght,
-                rawData.cbegin() + PREAMBLESIZE + HEADERSIZE + dataLenght
-                + CHECKSUMSIZE, checksum.begin());
+      std::copy(inputIterator, inputIterator + CHECKSUMSIZE, checksum.begin());
 
-      if (checkChecksum(checksum, data)) {
-        SPWLPacket packet{senderAddress, channel, data, last};
+      if (checkChecksum(checksum, rawHeader, data)) {
+        SPWLPacket packet{header.senderAddress, header.channel, data,
+            header.last};
         std::pair<SPWLPacket, bool> result{packet, true};
         return result;
       }
@@ -117,21 +102,63 @@ bool SPWLPacket::
   return true;
 }
 
-uint16_t SPWLPacket::getLengthFromHeader(HeaderContainer header) {
-  uint16_t length = header.at(3) << 8;
-  length += header.at(4);
-  return length;
+uint16_t SPWLPacket::getLengthFromHeader(const HeaderContainer& header) {
+  SPWLHeader result = getHeaderFromRaw(header);
+  return result.length;
 }
 
-bool SPWLPacket::checkChecksum(ChecksumContainer checksum, DataContainer data) {
-  return (checksum == generateChecksum(data));
+SPWLPacket::HeaderContainer SPWLPacket::getRawFromHeader(
+    const SPWLHeader& header, const uint16_t dataSize) {
+  HeaderContainer result{};
+
+  result.at(0) = static_cast<unsigned char>(header.senderAddress >> 8);
+  result.at(1) = static_cast<unsigned char>(header.senderAddress);
+
+  result.at(2) = header.channel;
+
+  result.at(3) = static_cast<unsigned char>(dataSize >> 8);
+  result.at(4) = static_cast<unsigned char>(dataSize);
+
+  unsigned char last = 0;
+  if (header.last) {
+    last = 255;
+  }
+  result.at(5) = last;
+
+  return result;
 }
 
-SPWLPacket::ChecksumContainer SPWLPacket::generateChecksum(DataContainer data) {
+SPWLHeader SPWLPacket::getHeaderFromRaw(const HeaderContainer& header) {
+  SPWLHeader result{};
+
+  result.senderAddress = header.at(0) << 8;
+  result.senderAddress += header.at(1);
+
+  result.channel = header.at(2);
+
+  result.length = header.at(3) << 8;
+  result.length += header.at(4);
+
+  result.last = false;
+  if (header.at(5) == 255) {
+    result.last = true;
+  }
+
+  return result;
+}
+
+bool SPWLPacket::checkChecksum(const ChecksumContainer& checksum,
+    const HeaderContainer& header, const DataContainer& data) {
+  return (checksum == generateChecksum(header, data));
+}
+
+SPWLPacket::ChecksumContainer SPWLPacket::generateChecksum(
+    const HeaderContainer& header, const DataContainer& data) {
   CRC16 crc{};
   PacketContainer input;
-  std::copy(data.cbegin(), data.cend(), input.begin());
-  crc.update(input, data.size());
+  auto outputIter = std::copy(header.cbegin(), header.cend(), input.begin());
+  std::copy(data.cbegin(), data.cend(), outputIter);
+  crc.update(input, HEADERSIZE + data.size());
   ChecksumContainer result;
   result.at(0) = static_cast<uint8_t>(crc.get() >> 8);
   result.at(1) = static_cast<uint8_t>(crc.get());

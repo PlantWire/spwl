@@ -5,6 +5,13 @@
 #include <array>
 #include <vector>
 
+typedef struct {
+  uint16_t senderAddress;
+  uint16_t length;
+  char channel;
+  bool last;
+} SPWLHeader;
+
 class SPWLPacket{
  public:
   static constexpr int PACKETSIZE = 512;
@@ -24,25 +31,33 @@ class SPWLPacket{
   using ChecksumContainer = std::array<unsigned char, CHECKSUMSIZE>;
 
  private:
+  static constexpr int CHANNEL = 23;
+  static constexpr uint16_t ADDRESS = 8;
+
   DataContainer data;
-  uint16_t senderAddress;
-  uint16_t length;
-  char channel;
-  bool last;
+  SPWLHeader header{};
   ChecksumContainer checksum;
   SPWLPacket(uint16_t senderAddress, char channel,
       DataContainer data, bool last);
-  static bool checkChecksum(ChecksumContainer checksum, DataContainer data);
-  static ChecksumContainer generateChecksum(DataContainer data);
+  static bool checkChecksum(const ChecksumContainer& checksum,
+      const HeaderContainer& header, const DataContainer& data);
+  static ChecksumContainer generateChecksum(const HeaderContainer& header,
+      const DataContainer& data);
+  static HeaderContainer getRawFromHeader(const SPWLHeader& header,
+      const uint16_t dataSize);
 
  public:
-  std::pair<SPWLPacket, bool> static encapsulateData(DataContainer data);
+  std::pair<SPWLPacket, bool> static encapsulateData(const DataContainer& data);
 
-  std::pair<SPWLPacket, bool> static encapsulatePacket(PacketContainer rawData);
+  std::pair<SPWLPacket, bool> static encapsulatePacket(
+      const PacketContainer& rawData);
 
   bool static checkPreamble(PreambleContainer preamble);
 
-  uint16_t static getLengthFromHeader(HeaderContainer header);
+  uint16_t static getLengthFromHeader(const HeaderContainer& header);
+  // ToDo(ckirchme): adjust server to use getHeader
+
+  SPWLHeader static getHeaderFromRaw(const HeaderContainer& header);
 
   DataContainer getData() const;
 
