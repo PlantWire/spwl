@@ -128,34 +128,6 @@ void packetOverflowTest() {
   ASSERTM("Oversized data was encapsulated", !res.second);
 }
 
-void lengthExtractor1Test() {
-  std::pair<SPWLPacket, bool> result = SPWLPacket::encapsulateData(data1);
-
-  ASSERTM("Result is missing.", result.second);
-  std::array<unsigned char, SPWLPacket::PACKETSIZE> rawData {
-      result.first.rawData() };
-  std::array<unsigned char, SPWLPacket::HEADERSIZE> header { };
-  std::copy(rawData.cbegin() + SPWLPacket::PREAMBLESIZE,
-      rawData.cbegin() + SPWLPacket::PREAMBLESIZE + SPWLPacket::HEADERSIZE,
-      header.begin());
-  uint16_t length = SPWLPacket::getLengthFromHeader(header);
-  ASSERT_EQUALM("Length was not correctly extracted.", data1.size(), length);
-}
-
-void lengthExtractor2Test() {
-  std::pair<SPWLPacket, bool> result = SPWLPacket::encapsulateData(data2);
-
-  ASSERTM("Result is missing.", result.second);
-  std::array<unsigned char, SPWLPacket::PACKETSIZE> rawData {
-      result.first.rawData() };
-  std::array<unsigned char, SPWLPacket::HEADERSIZE> header { };
-  std::copy(rawData.cbegin() + SPWLPacket::PREAMBLESIZE,
-      rawData.cbegin() + SPWLPacket::PREAMBLESIZE + SPWLPacket::HEADERSIZE,
-      header.begin());
-  uint16_t length = SPWLPacket::getLengthFromHeader(header);
-  ASSERT_EQUALM("Length was not correctly extracted.", data2.size(), length);
-}
-
 void headerCreate1Test() {
   std::pair<SPWLPacket, bool> result = SPWLPacket::encapsulateData(data1);
 
@@ -223,8 +195,6 @@ bool runAllTests(int argc, char const *argv[]) {
   s.push_back(CUTE(packetMinTest));
   s.push_back(CUTE(packetMaxTest));
   s.push_back(CUTE(packetOverflowTest));
-  s.push_back(CUTE(lengthExtractor1Test));
-  s.push_back(CUTE(lengthExtractor2Test));
   s.push_back(CUTE(headerCreate1Test));
   s.push_back(CUTE(headerCreate2Test));
   s.push_back(CUTE(rawDataSize1Test));

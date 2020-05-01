@@ -102,11 +102,6 @@ bool SPWLPacket::
   return true;
 }
 
-uint16_t SPWLPacket::getLengthFromHeader(const HeaderContainer& header) {
-  SPWLHeader result = getHeaderFromRaw(header);
-  return result.dataSize;
-}
-
 SPWLPacket::HeaderContainer SPWLPacket::getRawFromHeader(
     const SPWLHeader& header) {
   HeaderContainer result{};

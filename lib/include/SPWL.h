@@ -53,9 +53,6 @@ class SPWLPacket{
 
   bool static checkPreamble(PreambleContainer preamble);
 
-  uint16_t static getLengthFromHeader(const HeaderContainer& header);
-  // ToDo(ckirchme): adjust server to use getHeader
-
   SPWLHeader static getHeaderFromRaw(const HeaderContainer& header);
 
   DataContainer getData() const;
