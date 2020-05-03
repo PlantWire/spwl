@@ -31,9 +31,7 @@ build_lib_prod:
 clean:
   ifeq ($(OS),Windows_NT)
 		del build/$(ARCHIVE).*
-		del build/sha256.*
   else
 		rm build/$(ARCHIVE).*
-		rm build/sha256.*
   endif
 
