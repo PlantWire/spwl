@@ -21,7 +21,7 @@ class SPWLPacket{
   static constexpr char TRAILERSIZE = 1;
   static constexpr int MAXDATASIZE = PACKETSIZE - PREAMBLESIZE - HEADERSIZE
                                       - CHECKSUMSIZE - TRAILERSIZE;
-  static constexpr char PREAMBLE[] = "UUUUUUU";
+  static const char PREAMBLE[];
   static constexpr unsigned char TRAILER = 4;
 
   using PacketContainer = std::array<unsigned char, PACKETSIZE>;
@@ -43,7 +43,6 @@ class SPWLPacket{
       const HeaderContainer& header, const DataContainer& data);
   static ChecksumContainer generateChecksum(const HeaderContainer& header,
       const DataContainer& data);
-  static HeaderContainer getRawFromHeader(const SPWLHeader& header);
 
  public:
   std::pair<SPWLPacket, bool> static encapsulateData(const DataContainer& data);
@@ -54,6 +53,7 @@ class SPWLPacket{
   bool static checkPreamble(PreambleContainer preamble);
 
   SPWLHeader static getHeaderFromRaw(const HeaderContainer& header);
+  static HeaderContainer getRawFromHeader(const SPWLHeader& header);
 
   DataContainer getData() const;
 
