@@ -12,7 +12,7 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - name: prepare
-      run:
+      run: |
         apt update
         apt install make python python-pip -y
         pip install cpplint
@@ -23,13 +23,11 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - name: prepare
-      run:
+      run: |
         apt update
         apt install make python python-pip -y
         pip install gcovr
-    - name: make
-      run: make
-    - name: make check
-      run: make check
-    - name: make distcheck
-      run: make distcheck
+    - name: test
+      run: |
+        make build_test
+        make run_test
