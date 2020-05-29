@@ -12,6 +12,8 @@ jobs:
     container: python:latest
     steps:
     - uses: actions/checkout@v2
+    - name: prepare
+      run: pip install cpplint
     - name: lint
       run: make lint
   test:
