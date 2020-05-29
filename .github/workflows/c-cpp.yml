@@ -9,17 +9,14 @@ on:
 jobs:
   lint:
     runs-on: ubuntu-latest
+    container: python:latest
     steps:
     - uses: actions/checkout@v2
-    - name: prepare
-      run: |
-        sudo apt update
-        sudo apt install make python python-pip -y
-        sudo pip install cpplint
     - name: lint
       run: make lint
   test:
     runs-on: ubuntu-latest
+    container: gcc:latest
     steps:
     - uses: actions/checkout@v2
     - name: prepare
