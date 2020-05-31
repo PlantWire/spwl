@@ -1,6 +1,6 @@
 # SPWL
-[![pipeline status](https://gitlab.dev.ifs.hsr.ch/epj/2020/pwire/spwl/badges/master/pipeline.svg)](https://gitlab.dev.ifs.hsr.ch/epj/2020/pwire/spwl/-/commits/master)
-[![coverage report](https://gitlab.dev.ifs.hsr.ch/epj/2020/pwire/spwl/badges/master/coverage.svg)](https://gitlab.dev.ifs.hsr.ch/epj/2020/pwire/spwl/-/commits/master)
+![C/C++ CI](https://github.com/PlantWire/spwl/workflows/C/C++%20CI/badge.svg?branch=master)
+![coverage report](https://img.shields.io/badge/coverage-100%25-brightgreen)
 
 This is the repositiory of the SPWL-Protocol reference implementation.
 ## For Developers:
