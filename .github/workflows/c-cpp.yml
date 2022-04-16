@@ -25,9 +25,4 @@ jobs:
         pip install gcovr
     - name: test
       run: |
-	mkdir build
-	cd build
-	cmake ..
-        make unit_tests
-        ./unit_tests
-	cd ../ && gcovr -r . -e "test/build/cute*" -e "test/build/ide_listener.h" -e "test/build/xml_listener.h" -e "test/build/SPWL-test.cpp" -e "lib/include/crc16.h" -e "lib/build/crc16.h" -e "test/cute"
+	mkdir build && cd build && cmake .. && make unit_tests && ./unit_tests && cd ../ && gcovr -r . -e "test/build/cute*" -e "test/build/ide_listener.h" -e "test/build/xml_listener.h" -e "test/build/SPWL-test.cpp" -e "lib/include/crc16.h" -e "lib/build/crc16.h" -e "test/cute"
