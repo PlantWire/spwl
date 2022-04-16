@@ -49,4 +49,9 @@ set_target_properties(unit_tests PROPERTIES
         CXX_STANDARD_REQUIRED YES
         CXX_EXTENSIONS NO
         )
+target_compile_options(unit_tests PRIVATE -g -O0 -fprofile-arcs -ftest-coverage -fPIC)
+target_link_libraries(
+        unit_tests
+        gcov
+)
 # End Testing
