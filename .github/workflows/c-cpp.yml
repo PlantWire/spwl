@@ -12,7 +12,7 @@ jobs:
     - name: prepare
       run: pip install cpplint
     - name: lint
-      run: make lint
+      run: cpplint --filter=-legal/copyright,-build/c++11,-runtime/references --recursive --exclude=test/cute --exclude=.metadata .
   test:
     runs-on: ubuntu-latest
     container: gcc:latest
@@ -21,9 +21,13 @@ jobs:
     - name: prepare
       run: |
         apt update
-        apt install make python python-pip -y
+        apt install cmake make python python-pip -y
         pip install gcovr
     - name: test
       run: |
-        make build_test
-        make run_test
+	mkdir build
+	cd build
+	cmake ..
+        make unit_tests
+        ./unit_tests
+	cd ../ && gcovr -r . -e "test/build/cute*" -e "test/build/ide_listener.h" -e "test/build/xml_listener.h" -e "test/build/SPWL-test.cpp" -e "lib/include/crc16.h" -e "lib/build/crc16.h" -e "test/cute"
