@@ -21,7 +21,7 @@ jobs:
     - name: prepare
       run: |
         apt update
-        apt install cmake make python python-pip -y
+        apt install cmake make python3 python3-pip -y
         pip install gcovr
     - name: test
       run: |
