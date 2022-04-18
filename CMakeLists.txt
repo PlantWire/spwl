@@ -28,6 +28,14 @@ target_include_directories(
         ./lib/include/
 )
 
+## Installation
+set_target_properties(${PROJECT_NAME} PROPERTIES PUBLIC_HEADER "lib/include/SPWL.h")
+include(GNUInstallDirs)
+INSTALL(TARGETS ${PROJECT_NAME}
+        LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}/${PROJECT_NAME}
+        PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/${PROJECT_NAME}
+        )
+
 ## Testing
 enable_testing()
 add_executable(
